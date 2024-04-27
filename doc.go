@@ -1,34 +1,34 @@
 /*
-Package CloudForest implements ensembles of decision trees for machine
+package learn implements ensembles of decision trees for machine
 learning in pure Go (golang to search engines). It allows for a number of related algorithms
 for classification, regression, feature selection and structure analysis on heterogeneous
 numerical/categorical data with missing values. These include:
 
-	* Breiman and Cutler's Random Forest for Classification and Regression
+  - Breiman and Cutler's Random Forest for Classification and Regression
 
-	* Adaptive Boosting (AdaBoost) Classification
+  - Adaptive Boosting (AdaBoost) Classification
 
-	* Gradiant Boosting Tree Regression
+  - Gradiant Boosting Tree Regression
 
-	* Entropy and Cost driven classification
+  - Entropy and Cost driven classification
 
-	* L1 regression
+  - L1 regression
 
-	* Feature selection with artificial contrasts
+  - Feature selection with artificial contrasts
 
-	* Proximity and model structure analysis
+  - Proximity and model structure analysis
 
-	* Roughly balanced bagging for unbalanced classification
+  - Roughly balanced bagging for unbalanced classification
 
 The API hasn't stabilized yet and may change rapidly. Tests and benchmarks have been performed
 only on embargoed data sets and can not yet be released.
 
 Library Documentation is in code and can be viewed with godoc or live at:
-http://godoc.org/github.com/ryanbressler/CloudForest
+http://godoc.org/ecg.mk/learn
 
 Documentation of command line utilities and file formats can be found in README.md, which can be
 viewed fromated on github:
-http://github.com/ryanbressler/CloudForest
+http://ecg.mk/learn
 
 Pull requests and bug reports are welcome.
 
@@ -36,8 +36,7 @@ CloudForest was created by Ryan Bressler and is being developed in the Shumelivi
 the Institute for Systems Biology for use on genomic/biomedical data with partial support
 from The Cancer Genome Atlas and the Inova Translational Medicine Institute.
 
-
-Goals
+# Goals
 
 CloudForest is intended to provide fast, comprehensible building blocks that can
 be used to implement ensembles of decision trees. CloudForest is written in Go to
@@ -47,8 +46,7 @@ of having to modify complex legacy code.
 Data structures and file formats are chosen with use in multi threaded and cluster
 environments in mind.
 
-
-Working with Trees
+# Working with Trees
 
 Go's support for function types is used to provide a interface to run code as data
 is percolated through a tree. This method is flexible enough that it can extend the tree being
@@ -77,26 +75,24 @@ proximity etc) in tree growth. The same Recurse method can also be used to analy
 to tabulate scores or extract structure. Utilities like leafcount and errorrate use this
 method to tabulate data about the tree in collection objects.
 
-
-Stackable Interfaces
+# Stackable Interfaces
 
 Decision tree's are grown with the goal of reducing "Impurity" which is usually defined as Gini
 Impurity for categorical targets or mean squared error for numerical targets. CloudForest grows
 trees against the Target interface which allows for alternative definitions of impurity. CloudForest
 includes several alternative targets:
 
- EntropyTarget : For use in entropy minimizing classification
- RegretTarget  : For use in classification driven by differing costs in mis-categorization.
- L1Target      : For use in L1 norm error regression (which may be less sensitive to outliers).
- OrdinalTarget : For ordinal regression
+	EntropyTarget : For use in entropy minimizing classification
+	RegretTarget  : For use in classification driven by differing costs in mis-categorization.
+	L1Target      : For use in L1 norm error regression (which may be less sensitive to outliers).
+	OrdinalTarget : For ordinal regression
 
 Additional targets can be stacked on top of these target to add boosting functionality:
- GradBoostTarget : For Gradient Boosting Regression
- AdaBoostTarget  : For Adaptive Boosting Classification
 
+	GradBoostTarget : For Gradient Boosting Regression
+	AdaBoostTarget  : For Adaptive Boosting Classification
 
-
-Efficient Splitting
+# Efficient Splitting
 
 Repeatedly splitting the data and searching for the best split at each node of a decision tree
 are the most computationally intensive parts of decision tree learning and CloudForest includes
@@ -128,7 +124,6 @@ pointers to these items and its use can be seen in functions like:
 		randomSplit bool,
 		allocs *BestSplitAllocs) (bestNum float64, bestCat int, bestBigCat *big.Int, impurityDecrease float64)
 
-
 For categorical predictors, BestSplit will also attempt to intelligently choose between 4
 different implementations depending on user input and the number of categories.
 These include exhaustive, random, and iterative searches for the best combination of categories
@@ -138,7 +133,7 @@ BestCatSplitBig and BestCatSplitIterBig.
 All numerical predictors are handled by BestNumSplit which
 relies on go's sorting package.
 
-Parallelism and Scaling
+# Parallelism and Scaling
 
 Training a Random forest is an inherently parallel process and CloudForest is designed
 to allow parallel implementations that can tackle large problems while keeping memory
@@ -159,14 +154,13 @@ For data sets that are too big to fit in memory on a single machine Tree.Grow an
 FeatureMatrix.BestSplitter can be reimplemented to load candidate features from disk,
 distributed database etc.
 
-
-Missing Values
+# Missing Values
 
 By default cloud forest uses a fast heuristic for missing values. When proposing a split on a feature
 with missing data the missing cases are removed and the impurity value is corrected to use three way impurity
 which reduces the bias towards features with lots of missing data:
 
-								I(split) = p(l)I(l)+p(r)I(r)+p(m)I(m)
+	I(split) = p(l)I(l)+p(r)I(r)+p(m)I(m)
 
 Missing values in the target variable are left out of impurity calculations.
 
@@ -191,8 +185,7 @@ as described in [3]
 
 [3] http://projecteuclid.org/DPubS?verb=Display&version=1.0&service=UI&handle=euclid.aoas/1223908043&page=record
 
-
-Main Structures
+# Main Structures
 
 In CloudForest data is stored using the FeatureMatrix struct which contains Features.
 
@@ -209,8 +202,5 @@ but it may be faster to grow the forest to disk as in the growforest utility.
 
 Prediction and Voting is done using Tree.Vote and CatBallotBox and NumBallotBox which implement the
 VoteTallyer interface.
-
-
-
 */
-package CloudForest
+package learn

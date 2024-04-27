@@ -1,6 +1,4 @@
-package CloudForest
-
-import ()
+package learn
 
 type nodeAndCases struct {
 	n          *Node
@@ -11,7 +9,7 @@ type nodeAndCases struct {
 	dead       bool
 }
 
-//Tree represents a single decision tree.
+// Tree represents a single decision tree.
 type Tree struct {
 	//Tree int
 	Root   *Node
@@ -19,16 +17,16 @@ type Tree struct {
 	Weight float64
 }
 
-//NewTree initializes one node tree.
+// NewTree initializes one node tree.
 func NewTree() *Tree {
 	return &Tree{new(Node), "", -1.0}
 }
 
-//AddNode adds a node a the specified path with the specified pred value and/or
-//Splitter. Paths are specified in the same format as in rf-aces sf files, as a
-//string of 'L' and 'R'. Nodes must be added from the root up as the case where
-//the path specifies a node whose parent does not already exist in the tree is
-//not handled well.
+// AddNode adds a node a the specified path with the specified pred value and/or
+// Splitter. Paths are specified in the same format as in rf-aces sf files, as a
+// string of 'L' and 'R'. Nodes must be added from the root up as the case where
+// the path specifies a node whose parent does not already exist in the tree is
+// not handled well.
 func (t *Tree) AddNode(path string, pred string, splitter *Splitter) {
 	n := new(Node)
 	n.Pred = pred
@@ -62,7 +60,7 @@ func (t *Tree) AddNode(path string, pred string, splitter *Splitter) {
 
 }
 
-//StripCodes removes all of the coded splits from a tree so that it can be used on new catagorical data.
+// StripCodes removes all of the coded splits from a tree so that it can be used on new catagorical data.
 func (t *Tree) StripCodes() {
 	t.Root.Climb(func(n *Node) {
 		if n.CodedSplit != nil {
@@ -333,10 +331,10 @@ func (t *Tree) GrowJungle(fm *FeatureMatrix,
 
 }
 
-//GetLeaves is called by the leaf count utility to
-//gather statistics about the nodes of a tree including the sets of cases at
-//"leaf" nodes that aren't split further and the number of times each feature
-//is used to split away each case.
+// GetLeaves is called by the leaf count utility to
+// gather statistics about the nodes of a tree including the sets of cases at
+// "leaf" nodes that aren't split further and the number of times each feature
+// is used to split away each case.
 func (t *Tree) GetLeaves(fm *FeatureMatrix, fbycase *SparseCounter) []Leaf {
 	leaves := make([]Leaf, 0)
 	ncases := fm.Data[0].Length()
@@ -360,7 +358,7 @@ func (t *Tree) GetLeaves(fm *FeatureMatrix, fbycase *SparseCounter) []Leaf {
 
 }
 
-//Partition partitions all of the cases in a FeatureMatrix.
+// Partition partitions all of the cases in a FeatureMatrix.
 func (t *Tree) Partition(fm *FeatureMatrix) (*[][]int, *[]string) {
 	leaves := make([][]int, 0)
 	preds := make([]string, 0)
@@ -381,16 +379,16 @@ func (t *Tree) Partition(fm *FeatureMatrix) (*[][]int, *[]string) {
 
 }
 
-//Leaf is a struct for storing the index of the cases at a terminal "Leaf" node
-//along with the Numeric predicted value.
+// Leaf is a struct for storing the index of the cases at a terminal "Leaf" node
+// along with the Numeric predicted value.
 type Leaf struct {
 	Cases []int
 	Pred  string
 }
 
-//Vote casts a vote for the predicted value of each case in fm *FeatureMatrix.
-//into bb *BallotBox. Since BallotBox is not thread safe trees should not vote
-//into the same BallotBox in parallel.
+// Vote casts a vote for the predicted value of each case in fm *FeatureMatrix.
+// into bb *BallotBox. Since BallotBox is not thread safe trees should not vote
+// into the same BallotBox in parallel.
 func (t *Tree) Vote(fm *FeatureMatrix, bb VoteTallyer) {
 	ncases := fm.Data[0].Length()
 	cases := make([]int, 0, ncases)
@@ -401,9 +399,9 @@ func (t *Tree) Vote(fm *FeatureMatrix, bb VoteTallyer) {
 	t.VoteCases(fm, bb, cases)
 }
 
-//VoteCases casts a vote for the predicted value of each case in fm *FeatureMatrix.
-//into bb *BallotBox. Since BallotBox is not thread safe trees should not vote
-//into the same BallotBox in parallel.
+// VoteCases casts a vote for the predicted value of each case in fm *FeatureMatrix.
+// into bb *BallotBox. Since BallotBox is not thread safe trees should not vote
+// into the same BallotBox in parallel.
 func (t *Tree) VoteCases(fm *FeatureMatrix, bb VoteTallyer, cases []int) {
 
 	weight := 1.0

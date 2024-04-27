@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/ryanbressler/CloudForest"
-	"github.com/ryanbressler/CloudForest/stats"
 	"io"
 	"log"
 	"math"
@@ -17,6 +15,9 @@ import (
 	"runtime/pprof"
 	"sync"
 	"time"
+
+	CloudForest "ecg.mk/learn"
+	"ecg.mk/learn/stats"
 )
 
 func main() {

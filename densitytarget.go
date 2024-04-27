@@ -1,4 +1,4 @@
-package CloudForest
+package learn
 
 import (
 	"fmt"
@@ -36,14 +36,14 @@ func (target *DensityTarget) SplitImpurity(l *[]int, r *[]int, m *[]int, allocs 
 	return
 }
 
-//UpdateSImpFromAllocs willl be called when splits are being built by moving cases from r to l as in learning from numerical variables.
-//Here it just wraps SplitImpurity but it can be implemented to provide further optimization.
+// UpdateSImpFromAllocs willl be called when splits are being built by moving cases from r to l as in learning from numerical variables.
+// Here it just wraps SplitImpurity but it can be implemented to provide further optimization.
 func (target *DensityTarget) UpdateSImpFromAllocs(l *[]int, r *[]int, m *[]int, allocs *BestSplitAllocs, movedRtoL *[]int) (impurityDecrease float64) {
 	return target.SplitImpurity(l, r, m, allocs)
 }
 
-//DensityTarget.Impurity uses the impurity measure defined in "Density Estimating Trees"
-//by Parikshit Ram and Alexander G. Gray
+// DensityTarget.Impurity uses the impurity measure defined in "Density Estimating Trees"
+// by Parikshit Ram and Alexander G. Gray
 func (target *DensityTarget) Impurity(cases *[]int, counter *[]int) (e float64) {
 	t := len(*cases)
 	e = float64(t*t) / float64(target.N*target.N)
@@ -60,8 +60,8 @@ func (target *DensityTarget) Impurity(cases *[]int, counter *[]int) (e float64) 
 	return
 }
 
-//DensityTarget.FindPredicted returns the string representation of the density in the region
-//spaned by the specified cases.
+// DensityTarget.FindPredicted returns the string representation of the density in the region
+// spaned by the specified cases.
 func (target *DensityTarget) FindPredicted(cases []int) string {
 	t := len(cases)
 	e := float64(t) / float64(target.N)

@@ -1,3 +1,3 @@
-go install github.com/ryanbressler/CloudForest/growforest
-go install github.com/ryanbressler/CloudForest/applyforest
-go install github.com/ryanbressler/CloudForest/leafcount
+go install ecg.mk/learn/cmd/growforest
+go install ecg.mk/learn/cmd/applyforest
+go install ecg.mk/learn/cmd/leafcount

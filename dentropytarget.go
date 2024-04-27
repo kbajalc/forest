@@ -1,4 +1,4 @@
-package CloudForest
+package learn
 
 import (
 	"fmt"
@@ -11,20 +11,21 @@ as in Ross Quinlan's ID3 (Iterative Dichotomizer 3) with a the entropy modified 
 "disutility entropy"
 
 I = - k Sum ri * pi * log(pi)
-
 */
 type DEntropyTarget struct {
 	CatFeature
 	Costs []float64
 }
 
-//NewDEntropyTarget creates a RefretTarget and initializes DEntropyTarget.Costs to the proper length.
+// NewDEntropyTarget creates a RefretTarget and initializes DEntropyTarget.Costs to the proper length.
 func NewDEntropyTarget(f CatFeature) *DEntropyTarget {
 	return &DEntropyTarget{f, make([]float64, f.NCats())}
 }
 
-/*NewDEntropyTarget.SetCosts puts costs in a map[string]float64 by feature name into the proper
-entries in NewDEntropyTarget.Costs.*/
+/*
+NewDEntropyTarget.SetCosts puts costs in a map[string]float64 by feature name into the proper
+entries in NewDEntropyTarget.Costs.
+*/
 func (target *DEntropyTarget) SetCosts(costmap map[string]float64) {
 	for i := 0; i < target.NCats(); i++ {
 		c := target.NumToCat(i)
@@ -51,8 +52,8 @@ func (target *DEntropyTarget) SplitImpurity(l *[]int, r *[]int, m *[]int, allocs
 	return
 }
 
-//UpdateSImpFromAllocs willl be called when splits are being built by moving cases from r to l as in learning from numerical variables.
-//Here it just wraps SplitImpurity but it can be implemented to provide further optimization.
+// UpdateSImpFromAllocs willl be called when splits are being built by moving cases from r to l as in learning from numerical variables.
+// Here it just wraps SplitImpurity but it can be implemented to provide further optimization.
 func (target *DEntropyTarget) UpdateSImpFromAllocs(l *[]int, r *[]int, m *[]int, allocs *BestSplitAllocs, movedRtoL *[]int) (impurityDecrease float64) {
 	target.MoveCountsRtoL(allocs, movedRtoL)
 	nl := float64(len(*l))
@@ -113,8 +114,8 @@ func (target *DEntropyTarget) FindPredicted(cases []int) (pred string) {
 	return fmt.Sprintf("%v", prob_true)
 }
 
-//DEntropyTarget.Impurity implements categorical entropy as sum(pj*log2(pj)) where pj
-//is the number of cases with the j'th category over the total number of cases.
+// DEntropyTarget.Impurity implements categorical entropy as sum(pj*log2(pj)) where pj
+// is the number of cases with the j'th category over the total number of cases.
 func (target *DEntropyTarget) Impurity(cases *[]int, counts *[]int) (e float64) {
 
 	total := len(*cases)

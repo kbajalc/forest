@@ -1,8 +1,6 @@
-package CloudForest
+package learn
 
-import ()
-
-//Forest represents a collection of decision trees grown to predict Target.
+// Forest represents a collection of decision trees grown to predict Target.
 type Forest struct {
 	//Forest string
 	Target    string

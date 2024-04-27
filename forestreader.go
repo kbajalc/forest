@@ -1,4 +1,4 @@
-package CloudForest
+package learn
 
 import (
 	"bufio"
@@ -20,7 +20,7 @@ type ForestReader struct {
 	br *bufio.Reader
 }
 
-//NewForestReader wraps the supplied io.Reader as a ForestReader.
+// NewForestReader wraps the supplied io.Reader as a ForestReader.
 func NewForestReader(r io.Reader) *ForestReader {
 	return &ForestReader{bufio.NewReader(r)}
 }
@@ -68,9 +68,11 @@ func (fr *ForestReader) ReadForest() (forest *Forest, err error) {
 	}
 }
 
-/*ForestReader.ReadTree reads the next tree from the underlying reader. If the next tree
+/*
+ForestReader.ReadTree reads the next tree from the underlying reader. If the next tree
 is in a new forest it returns a forest object as well. If an io.EOF or other error is
-encountered it returns that as well as any partially parsed structs.*/
+encountered it returns that as well as any partially parsed structs.
+*/
 func (fr *ForestReader) ReadTree() (tree *Tree, forest *Forest, err error) {
 	intree := false
 	line := ""

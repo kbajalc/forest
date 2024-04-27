@@ -1,4 +1,4 @@
-package CloudForest
+package learn
 
 import (
 	"fmt"
@@ -13,7 +13,7 @@ type HDistanceTarget struct {
 	Pos_class string
 }
 
-//NewHDistanceTarget creates a RefretTarget and initializes HDistanceTarget.Costs to the proper length.
+// NewHDistanceTarget creates a RefretTarget and initializes HDistanceTarget.Costs to the proper length.
 func NewHDistanceTarget(f CatFeature, pos_class string) *HDistanceTarget {
 	return &HDistanceTarget{f, pos_class}
 }
@@ -28,8 +28,8 @@ func (target *HDistanceTarget) SplitImpurity(l *[]int, r *[]int, m *[]int, alloc
 	return target.HDist(allocs.LCounter, allocs.RCounter)
 }
 
-//UpdateSImpFromAllocs willl be called when splits are being built by moving cases from r to l as in learning from numerical variables.
-//Here it just wraps SplitImpurity but it can be implemented to provide further optimization.
+// UpdateSImpFromAllocs willl be called when splits are being built by moving cases from r to l as in learning from numerical variables.
+// Here it just wraps SplitImpurity but it can be implemented to provide further optimization.
 func (target *HDistanceTarget) UpdateSImpFromAllocs(l *[]int, r *[]int, m *[]int, allocs *BestSplitAllocs, movedRtoL *[]int) float64 {
 	target.MoveCountsRtoL(allocs, movedRtoL)
 	return target.HDist(allocs.LCounter, allocs.RCounter)
@@ -79,7 +79,7 @@ func (target *HDistanceTarget) FindPredicted(cases []int) (pred string) {
 	return fmt.Sprintf("%v", prob_true)
 }
 
-//HDistanceTarget.Impurity
+// HDistanceTarget.Impurity
 func (target *HDistanceTarget) Impurity(cases *[]int, counts *[]int) (e float64) {
 
 	return -1.0

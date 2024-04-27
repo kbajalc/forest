@@ -1,6 +1,4 @@
-package CloudForest
-
-import ()
+package learn
 
 /*
 GradBoostTarget wraps a numerical feature as a target for us in Gradiant Boosting Trees.
@@ -40,7 +38,7 @@ func (f *GradBoostTarget) Intercept() float64 {
 	return f.Mean
 }
 
-//BUG(ryan) does GradBoostingTarget need seperate residuals and values?
+// BUG(ryan) does GradBoostingTarget need seperate residuals and values?
 func (f *GradBoostTarget) Boost(leaves *[][]int, preds *[]string) (weight float64) {
 	for i, cases := range *leaves {
 		f.Update(&cases, ParseFloat((*preds)[i]))
@@ -49,8 +47,8 @@ func (f *GradBoostTarget) Boost(leaves *[][]int, preds *[]string) (weight float6
 
 }
 
-//Update updates the underlying numeric data by subtracting the mean*weight of the
-//specified cases from the value for those cases.
+// Update updates the underlying numeric data by subtracting the mean*weight of the
+// specified cases from the value for those cases.
 func (f *GradBoostTarget) Update(cases *[]int, predicted float64) {
 	for _, i := range *cases {
 		if !f.IsMissing(i) {
@@ -59,8 +57,8 @@ func (f *GradBoostTarget) Update(cases *[]int, predicted float64) {
 	}
 }
 
-//Impurity returns Gini impurity or mean squared error vs the mean for a set of cases
-//depending on weather the feature is categorical or numerical
+// Impurity returns Gini impurity or mean squared error vs the mean for a set of cases
+// depending on weather the feature is categorical or numerical
 func (target *GradBoostTarget) Impurity(cases *[]int, counter *[]int) (e float64) {
 	e = target.NumFeature.Impurity(cases, counter)
 	if e <= minImp {

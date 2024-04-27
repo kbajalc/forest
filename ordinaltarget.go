@@ -1,4 +1,4 @@
-package CloudForest
+package learn
 
 import (
 	"fmt"
@@ -51,8 +51,8 @@ func (target *OrdinalTarget) SplitImpurity(l *[]int, r *[]int, m *[]int, allocs 
 	return
 }
 
-//UpdateSImpFromAllocs willl be called when splits are being built by moving cases from r to l as in learning from numerical variables.
-//Here it just wraps SplitImpurity but it can be implemented to provide further optimization.
+// UpdateSImpFromAllocs willl be called when splits are being built by moving cases from r to l as in learning from numerical variables.
+// Here it just wraps SplitImpurity but it can be implemented to provide further optimization.
 func (target *OrdinalTarget) UpdateSImpFromAllocs(l *[]int, r *[]int, m *[]int, allocs *BestSplitAllocs, movedRtoL *[]int) (impurityDecrease float64) {
 	return target.SplitImpurity(l, r, m, allocs)
 }
@@ -80,7 +80,7 @@ func (f *OrdinalTarget) Mode(cases *[]int) (m float64) {
 
 }
 
-//OrdinalTarget.Impurity is an ordinal version of impurity using Mode instead of Mean for prediction.
+// OrdinalTarget.Impurity is an ordinal version of impurity using Mode instead of Mean for prediction.
 func (target *OrdinalTarget) Impurity(cases *[]int, counter *[]int) (e float64) {
 	m := target.Predicted(cases)
 	e = target.Error(cases, m)

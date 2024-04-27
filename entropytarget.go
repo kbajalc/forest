@@ -1,4 +1,4 @@
-package CloudForest
+package learn
 
 import (
 	"math"
@@ -12,7 +12,7 @@ type EntropyTarget struct {
 	CatFeature
 }
 
-//NewEntropyTarget creates a RefretTarget and initializes EntropyTarget.Costs to the proper length.
+// NewEntropyTarget creates a RefretTarget and initializes EntropyTarget.Costs to the proper length.
 func NewEntropyTarget(f CatFeature) *EntropyTarget {
 	return &EntropyTarget{f}
 }
@@ -36,8 +36,8 @@ func (target *EntropyTarget) SplitImpurity(l *[]int, r *[]int, m *[]int, allocs 
 	return
 }
 
-//UpdateSImpFromAllocs willl be called when splits are being built by moving cases from r to l as in learning from numerical variables.
-//Here it just wraps SplitImpurity but it can be implemented to provide further optimization.
+// UpdateSImpFromAllocs willl be called when splits are being built by moving cases from r to l as in learning from numerical variables.
+// Here it just wraps SplitImpurity but it can be implemented to provide further optimization.
 func (target *EntropyTarget) UpdateSImpFromAllocs(l *[]int, r *[]int, m *[]int, allocs *BestSplitAllocs, movedRtoL *[]int) (impurityDecrease float64) {
 	target.MoveCountsRtoL(allocs, movedRtoL)
 	nl := float64(len(*l))
@@ -67,8 +67,8 @@ func (target *EntropyTarget) ImpFromCounts(total int, counts *[]int) (e float64)
 
 }
 
-//EntropyTarget.Impurity implements categorical entropy as sum(pj*log2(pj)) where pj
-//is the number of cases with the j'th category over the total number of cases.
+// EntropyTarget.Impurity implements categorical entropy as sum(pj*log2(pj)) where pj
+// is the number of cases with the j'th category over the total number of cases.
 func (target *EntropyTarget) Impurity(cases *[]int, counts *[]int) (e float64) {
 
 	total := len(*cases)

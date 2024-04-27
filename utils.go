@@ -1,4 +1,4 @@
-package CloudForest
+package learn
 
 import (
 	"fmt"
@@ -16,20 +16,20 @@ func ParseFloat(s string) float64 {
 
 }
 
-//RunningMean is a thread safe strut for keeping track of running means as used in
-//importance calculations. (TODO: could this be made lock free?)
+// RunningMean is a thread safe strut for keeping track of running means as used in
+// importance calculations. (TODO: could this be made lock free?)
 type RunningMean struct {
 	mutex sync.Mutex
 	Mean  float64
 	Count float64
 }
 
-//Add add's 1.0 to the running mean in a thread safe way.
+// Add add's 1.0 to the running mean in a thread safe way.
 func (rm *RunningMean) Add(val float64) {
 	rm.WeightedAdd(val, 1.0)
 }
 
-//WeightedAdd add's the specified value to the running mean in a thread safe way.
+// WeightedAdd add's the specified value to the running mean in a thread safe way.
 func (rm *RunningMean) WeightedAdd(val float64, weight float64) {
 	if !math.IsNaN(val) && !math.IsNaN(weight) {
 		rm.mutex.Lock()
@@ -47,7 +47,7 @@ func (rm *RunningMean) WeightedAdd(val float64, weight float64) {
 
 }
 
-//Read reads the mean and count
+// Read reads the mean and count
 func (rm *RunningMean) Read() (mean float64, count float64) {
 	rm.mutex.Lock()
 	mean = rm.Mean
@@ -56,7 +56,7 @@ func (rm *RunningMean) Read() (mean float64, count float64) {
 	return
 }
 
-//NewRunningMeans returns an initalized *[]*RunningMean.
+// NewRunningMeans returns an initalized *[]*RunningMean.
 func NewRunningMeans(size int) *[]*RunningMean {
 	importance := make([]*RunningMean, 0, size)
 	for i := 0; i < size; i++ {
@@ -67,14 +67,14 @@ func NewRunningMeans(size int) *[]*RunningMean {
 
 }
 
-//SparseCounter uses maps to track sparse integer counts in large matrix.
-//The matrix is assumed to contain zero values where nothing has been added.
+// SparseCounter uses maps to track sparse integer counts in large matrix.
+// The matrix is assumed to contain zero values where nothing has been added.
 type SparseCounter struct {
 	Map   map[int]map[int]int
 	mutex sync.Mutex
 }
 
-//Add increases the count in i,j by val.
+// Add increases the count in i,j by val.
 func (sc *SparseCounter) Add(i int, j int, val int) {
 	sc.mutex.Lock()
 	defer sc.mutex.Unlock()
@@ -92,8 +92,8 @@ func (sc *SparseCounter) Add(i int, j int, val int) {
 
 }
 
-//WriteTsv writes the non zero counts out into a three column tsv containing i, j, and
-//count in the columns.
+// WriteTsv writes the non zero counts out into a three column tsv containing i, j, and
+// count in the columns.
 func (sc *SparseCounter) WriteTsv(writer io.Writer) {
 	sc.mutex.Lock()
 	defer sc.mutex.Unlock()

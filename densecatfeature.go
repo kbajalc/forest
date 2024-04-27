@@ -1,4 +1,4 @@
-package CloudForest
+package learn
 
 import (
 	"math/big"
@@ -6,14 +6,17 @@ import (
 	"strings"
 )
 
-/*DenseCatFeature is a structure representing a single feature in a feature matrix.
+/*
+DenseCatFeature is a structure representing a single feature in a feature matrix.
 It contains:
 An embedded CatMap (may only be instantiated for cat data)
+
 	NumData   : A slice of floates used for numerical data and nil otherwise
 	CatData   : A slice of ints for categorical data and nil otherwise
 	Missing   : A slice of bools indicating missing values. Measure this for length.
 	Numerical : is the feature numerical
-	Name      : the name of the feature*/
+	Name      : the name of the feature
+*/
 type DenseCatFeature struct {
 	*CatMap
 	CatData      []int
@@ -23,8 +26,8 @@ type DenseCatFeature struct {
 	HasMissing   bool
 }
 
-//EncodeToNum returns numerical features doing simple binary encoding of
-//Each of the distinct catagories in the feature.
+// EncodeToNum returns numerical features doing simple binary encoding of
+// Each of the distinct catagories in the feature.
 func (f *DenseCatFeature) EncodeToNum() (fs []Feature) {
 	l := f.Length()
 	if f.NCats() <= 2 {
@@ -81,8 +84,8 @@ func (f *DenseCatFeature) OneHot() (fs []Feature) {
 	return
 }
 
-//Append will parse and append a single value to the end of the feature. It is generally only used
-//during data parseing.
+// Append will parse and append a single value to the end of the feature. It is generally only used
+// during data parseing.
 func (f *DenseCatFeature) Append(v string) {
 	norm := strings.ToLower(v)
 	if len(norm) == 0 || norm == "?" || norm == "nan" || norm == "na" || norm == "null" {
@@ -96,44 +99,44 @@ func (f *DenseCatFeature) Append(v string) {
 	f.Missing = append(f.Missing, false)
 }
 
-//Length returns the number of cases in the feature.
+// Length returns the number of cases in the feature.
 func (f *DenseCatFeature) Length() int {
 	return len(f.Missing)
 }
 
-//GetName returns the name of the feature.
+// GetName returns the name of the feature.
 func (f *DenseCatFeature) GetName() string {
 	return f.Name
 }
 
-//IsMissing returns weather the given case is missing in the feature.
+// IsMissing returns weather the given case is missing in the feature.
 func (f *DenseCatFeature) IsMissing(i int) bool {
 	return f.Missing[i]
 }
 
-//MissingVals returns weather the feature has any missing values.
+// MissingVals returns weather the feature has any missing values.
 func (f *DenseCatFeature) MissingVals() bool {
 	return f.HasMissing
 }
 
-//PutMissing sets the given case i to be missing.
+// PutMissing sets the given case i to be missing.
 func (f *DenseCatFeature) PutMissing(i int) {
 	f.Missing[i] = true
 	f.HasMissing = true
 }
 
-//Geti returns the int encoding of the class label for the i'th case.
+// Geti returns the int encoding of the class label for the i'th case.
 func (f *DenseCatFeature) Geti(i int) int {
 	return f.CatData[i]
 }
 
-//Puti puts the v't class label encoding into the ith case.
+// Puti puts the v't class label encoding into the ith case.
 func (f *DenseCatFeature) Puti(i int, v int) {
 	f.CatData[i] = v
 	f.Missing[i] = false
 }
 
-//GetStr returns the class label for the i'th case.
+// GetStr returns the class label for the i'th case.
 func (f *DenseCatFeature) GetStr(i int) string {
 	if f.Missing[i] {
 		return "NA"
@@ -141,7 +144,7 @@ func (f *DenseCatFeature) GetStr(i int) string {
 	return f.Back[f.CatData[i]]
 }
 
-//PutStr set's the i'th case to the class label v.
+// PutStr set's the i'th case to the class label v.
 func (f *DenseCatFeature) PutStr(i int, v string) {
 	norm := strings.ToLower(v)
 	if len(norm) == 0 || norm == "?" || norm == "nan" || norm == "na" || norm == "null" {
@@ -153,7 +156,7 @@ func (f *DenseCatFeature) PutStr(i int, v string) {
 	f.Missing[i] = false
 }
 
-//GoesLeft tests if the i'th case goes left according to the supplid Spliter.
+// GoesLeft tests if the i'th case goes left according to the supplid Spliter.
 func (f *DenseCatFeature) GoesLeft(i int, splitter *Splitter) bool {
 	return splitter.Left[f.Back[f.CatData[i]]]
 }
@@ -225,8 +228,8 @@ func (f *DenseCatFeature) BestSplit(target Target,
 
 }
 
-//Split does an inplace split from a coded spli value which should be an int or Big.Int with bit flags
-//representing which class labels go left.
+// Split does an inplace split from a coded spli value which should be an int or Big.Int with bit flags
+// representing which class labels go left.
 func (f *DenseCatFeature) Split(codedSplit interface{}, cases []int) (l []int, r []int, m []int) {
 	length := len(cases)
 
@@ -290,8 +293,8 @@ func (f *DenseCatFeature) Split(codedSplit interface{}, cases []int) (l []int, r
 	return
 }
 
-//SplitPoints reorders cs and returns the indexes at which left and right cases end and begin
-//The codedSplit whould be an int or Big.Int with bits set to indicate which classes go left.
+// SplitPoints reorders cs and returns the indexes at which left and right cases end and begin
+// The codedSplit whould be an int or Big.Int with bits set to indicate which classes go left.
 func (f *DenseCatFeature) SplitPoints(codedSplit interface{}, cs *[]int) (int, int) {
 	cases := *cs
 	length := len(cases)
@@ -354,9 +357,9 @@ func (f *DenseCatFeature) SplitPoints(codedSplit interface{}, cs *[]int) (int, i
 	return lastleft, lastright
 }
 
-//DecodeSplit builds a splitter from the numeric values returned by BestNumSplit or
-//BestCatSplit. Numeric splitters are decoded to send values <= num left. Categorical
-//splitters are decoded to send categorical values for which the bit in cat is 1 left.
+// DecodeSplit builds a splitter from the numeric values returned by BestNumSplit or
+// BestCatSplit. Numeric splitters are decoded to send values <= num left. Categorical
+// splitters are decoded to send categorical values for which the bit in cat is 1 left.
 func (f *DenseCatFeature) DecodeSplit(codedSplit interface{}) (s *Splitter) {
 
 	nCats := f.NCats()
@@ -385,7 +388,8 @@ func (f *DenseCatFeature) DecodeSplit(codedSplit interface{}) (s *Splitter) {
 	return
 }
 
-/*BestCatSplitIterBig performs an iterative search to find the split that minimizes impurity
+/*
+BestCatSplitIterBig performs an iterative search to find the split that minimizes impurity
 in the specified target. It expects to be provided for cases fir which the feature is not missing.
 
 Searching is implemented via bitwise on integers for speed but will currently only work
@@ -395,7 +399,6 @@ The best split is returned as an int for which the bits corresponding to categor
 be sent left has been flipped. This can be decoded into a splitter using DecodeSplit on the
 training feature and should not be applied to testing data without doing so as the order of
 categories may have changed.
-
 
 allocs contains pointers to reusable structures for use while searching for the best split and should
 be initialized to the proper size with NewBestSplitAlocs.
@@ -829,7 +832,8 @@ func (f *DenseCatFeature) BestBinSplit(target Target,
 	return
 }
 
-/*BestCatSplitBig performs a random/exhaustive search to find the split that minimizes impurity
+/*
+BestCatSplitBig performs a random/exhaustive search to find the split that minimizes impurity
 in the specified target. It expects to be provided for cases fir which the feature is not missing.
 
 Searching is implemented via bitwise on Big.Ints to handle large n categorical features but BestCatSplit
@@ -960,7 +964,7 @@ func (target *DenseCatFeature) SplitImpurity(l *[]int, r *[]int, m *[]int, alloc
 	return
 }
 
-//MoveCoutsRtoL moves the by case counts from R to L for use in iterave updates.
+// MoveCoutsRtoL moves the by case counts from R to L for use in iterave updates.
 func (target *DenseCatFeature) MoveCountsRtoL(allocs *BestSplitAllocs, movedRtoL *[]int) {
 	var cat, i int
 	catdata := target.CatData
@@ -976,8 +980,8 @@ func (target *DenseCatFeature) MoveCountsRtoL(allocs *BestSplitAllocs, movedRtoL
 	}
 }
 
-//UpdateSImpFromAllocs willl be called when splits are being built by moving cases from r to l as in learning from numerical variables.
-//Here it just wraps SplitImpurity but it can be implemented to provide further optimization.
+// UpdateSImpFromAllocs willl be called when splits are being built by moving cases from r to l as in learning from numerical variables.
+// Here it just wraps SplitImpurity but it can be implemented to provide further optimization.
 func (target *DenseCatFeature) UpdateSImpFromAllocs(l *[]int, r *[]int, m *[]int, allocs *BestSplitAllocs, movedRtoL *[]int) (impurityDecrease float64) {
 	var cat, i int
 	catdata := target.CatData
@@ -1008,8 +1012,8 @@ func (target *DenseCatFeature) UpdateSImpFromAllocs(l *[]int, r *[]int, m *[]int
 	return
 }
 
-//Impurity returns Gini impurity or mean squared error vs the mean for a set of cases
-//depending on weather the feature is categorical or numerical
+// Impurity returns Gini impurity or mean squared error vs the mean for a set of cases
+// depending on weather the feature is categorical or numerical
 func (target *DenseCatFeature) Impurity(cases *[]int, counter *[]int) (e float64) {
 
 	e = target.GiniWithoutAlocate(cases, counter)
@@ -1018,17 +1022,17 @@ func (target *DenseCatFeature) Impurity(cases *[]int, counter *[]int) (e float64
 
 }
 
-//Gini returns the gini impurity for the specified cases in the feature
-//gini impurity is calculated as 1 - Sum(fi^2) where fi is the fraction
-//of cases in the ith catagory.
+// Gini returns the gini impurity for the specified cases in the feature
+// gini impurity is calculated as 1 - Sum(fi^2) where fi is the fraction
+// of cases in the ith catagory.
 func (target *DenseCatFeature) Gini(cases *[]int) (e float64) {
 	counter := make([]int, target.NCats())
 	e = target.GiniWithoutAlocate(cases, &counter)
 	return
 }
 
-//CountPerCat puts per catagory counts in the supplied counter. It is designed for use in
-//a target and doesn't check for missing values.
+// CountPerCat puts per catagory counts in the supplied counter. It is designed for use in
+// a target and doesn't check for missing values.
 func (target *DenseCatFeature) CountPerCat(cases *[]int, counts *[]int) {
 	//this function is a hot spot
 	//cs := *cases
@@ -1066,7 +1070,7 @@ func (target *DenseCatFeature) GiniWithoutAlocate(cases *[]int, counts *[]int) (
 	return
 }
 
-//ImpFromCounts recalculates gini impurity from class counts for us in intertive updates.
+// ImpFromCounts recalculates gini impurity from class counts for us in intertive updates.
 func (target *DenseCatFeature) ImpFromCounts(total int, counts *[]int) (e float64) {
 	e++
 	t := float64(total * total)
@@ -1077,7 +1081,7 @@ func (target *DenseCatFeature) ImpFromCounts(total int, counts *[]int) (e float6
 
 }
 
-//Span counts the number of distincts cats present in the specified cases.
+// Span counts the number of distincts cats present in the specified cases.
 func (target *DenseCatFeature) Span(cases *[]int, counts *[]int) float64 {
 	total := 0
 	counter := *counts
@@ -1104,14 +1108,14 @@ func (target *DenseCatFeature) Span(cases *[]int, counts *[]int) float64 {
 	return float64(total)
 }
 
-//Mode returns the mode category feature for the cases specified.
+// Mode returns the mode category feature for the cases specified.
 func (f *DenseCatFeature) Mode(cases *[]int) (m string) {
 	m = f.Back[f.Modei(cases)]
 	return
 
 }
 
-//Modei returns the mode category feature for the cases specified.
+// Modei returns the mode category feature for the cases specified.
 func (f *DenseCatFeature) Modei(cases *[]int) (m int) {
 	counts := make([]int, f.NCats())
 	for _, i := range *cases {
@@ -1131,9 +1135,9 @@ func (f *DenseCatFeature) Modei(cases *[]int) (m int) {
 
 }
 
-//FindPredicted takes the indexes of a set of cases and returns the
-//predicted value. For categorical features this is a string containing the
-//most common category and for numerical it is the mean of the values.
+// FindPredicted takes the indexes of a set of cases and returns the
+// predicted value. For categorical features this is a string containing the
+// most common category and for numerical it is the mean of the values.
 func (f *DenseCatFeature) FindPredicted(cases []int) (pred string) {
 
 	pred = f.Mode(&cases)
@@ -1142,7 +1146,7 @@ func (f *DenseCatFeature) FindPredicted(cases []int) (pred string) {
 
 }
 
-//Shuffle does an inflace shuffle of the specified feature
+// Shuffle does an inflace shuffle of the specified feature
 func (f *DenseCatFeature) Shuffle() {
 	capacity := len(f.Missing)
 	//shuffle
@@ -1160,7 +1164,7 @@ func (f *DenseCatFeature) Shuffle() {
 
 }
 
-//ShuffleCases does an inplace shuffle of the specified cases
+// ShuffleCases does an inplace shuffle of the specified cases
 func (f *DenseCatFeature) ShuffleCases(cases *[]int, allocs *BestSplitAllocs) {
 	capacity := len(*cases)
 	//shuffle
@@ -1180,8 +1184,10 @@ func (f *DenseCatFeature) ShuffleCases(cases *[]int, allocs *BestSplitAllocs) {
 
 }
 
-/*ShuffledCopy returns a shuffled version of f for use as an artificial contrast in evaluation of
-importance scores. The new feature will be named featurename:SHUFFLED*/
+/*
+ShuffledCopy returns a shuffled version of f for use as an artificial contrast in evaluation of
+importance scores. The new feature will be named featurename:SHUFFLED
+*/
 func (f *DenseCatFeature) ShuffledCopy() Feature {
 	fake := f.Copy()
 	fake.Shuffle()
@@ -1211,14 +1217,14 @@ func (f *DenseCatFeature) Copy() Feature {
 
 }
 
-//CopyInTo coppoes the values of the feature into a new feature...doesn't copy CatMap, name etc.
+// CopyInTo coppoes the values of the feature into a new feature...doesn't copy CatMap, name etc.
 func (f *DenseCatFeature) CopyInTo(copyf Feature) {
 
 	copy(copyf.(*DenseCatFeature).Missing, f.Missing)
 	copy(copyf.(*DenseCatFeature).CatData, f.CatData)
 }
 
-//ImputeMissing imputes the missing values in a feature to the mean or mode of the feature.
+// ImputeMissing imputes the missing values in a feature to the mean or mode of the feature.
 func (f *DenseCatFeature) ImputeMissing() {
 	cases := make([]int, 0, len(f.Missing))
 	for i := range f.Missing {

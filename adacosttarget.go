@@ -1,4 +1,4 @@
-package CloudForest
+package learn
 
 import (
 	"math"
@@ -12,7 +12,6 @@ Yanmin Sun, Mohamed S. Kamel and Yang Wang
 
 See equations in slides here:
 http://people.ee.duke.edu/~lcarin/Minhua4.18.08.pdf
-
 */
 type AdaCostTarget struct {
 	CatFeature
@@ -32,8 +31,10 @@ func NewAdaCostTarget(f CatFeature) (abt *AdaCostTarget) {
 	return
 }
 
-/*RegretTarget.SetCosts puts costs in a map[string]float64 by feature name into the proper
-entries in RegretTarget.Costs.*/
+/*
+RegretTarget.SetCosts puts costs in a map[string]float64 by feature name into the proper
+entries in RegretTarget.Costs.
+*/
 func (target *AdaCostTarget) SetCosts(costmap map[string]float64) {
 	for i := 0; i < target.NCats(); i++ {
 		c := target.NumToCat(i)
@@ -60,8 +61,8 @@ func (target *AdaCostTarget) SplitImpurity(l *[]int, r *[]int, m *[]int, allocs 
 	return
 }
 
-//UpdateSImpFromAllocs willl be called when splits are being built by moving cases from r to l as in learning from numerical variables.
-//Here it just wraps SplitImpurity but it can be implemented to provide further optimization.
+// UpdateSImpFromAllocs willl be called when splits are being built by moving cases from r to l as in learning from numerical variables.
+// Here it just wraps SplitImpurity but it can be implemented to provide further optimization.
 func (target *AdaCostTarget) UpdateSImpFromAllocs(l *[]int, r *[]int, m *[]int, allocs *BestSplitAllocs, movedRtoL *[]int) (impurityDecrease float64) {
 	var cat, i int
 	lcounter := *allocs.LCounter
@@ -90,7 +91,7 @@ func (target *AdaCostTarget) UpdateSImpFromAllocs(l *[]int, r *[]int, m *[]int, 
 	return
 }
 
-//Impurity is an AdaCosting that uses the weights specified in weights.
+// Impurity is an AdaCosting that uses the weights specified in weights.
 func (target *AdaCostTarget) Impurity(cases *[]int, counter *[]int) (e float64) {
 	e = 0.0
 	//m := target.Modei(cases)
@@ -101,7 +102,7 @@ func (target *AdaCostTarget) Impurity(cases *[]int, counter *[]int) (e float64) 
 	return
 }
 
-//ImpFromCounts recalculates gini impurity from class counts for us in intertive updates.
+// ImpFromCounts recalculates gini impurity from class counts for us in intertive updates.
 func (target *AdaCostTarget) ImpFromCounts(cases *[]int, counter *[]int) (e float64) {
 
 	var m, mc int
@@ -126,8 +127,8 @@ func (target *AdaCostTarget) ImpFromCounts(cases *[]int, counter *[]int) (e floa
 
 }
 
-//Boost performs categorical adaptive boosting using the specified partition and
-//returns the weight that tree that generated the partition should be given.
+// Boost performs categorical adaptive boosting using the specified partition and
+// returns the weight that tree that generated the partition should be given.
 func (t *AdaCostTarget) Boost(leaves *[][]int) (weight float64) {
 	weight = 0.0
 	counter := make([]int, t.NCats())

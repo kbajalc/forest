@@ -1,9 +1,9 @@
-package CloudForest
+package learn
 
 import (
 	"fmt"
-	"testing"
 	"math/rand"
+	"testing"
 )
 
 func TestCatFeature(t *testing.T) {

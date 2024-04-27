@@ -1,13 +1,13 @@
-/*Package sortby is a  hybrid, non stable sort based on go's standard sort but with
+/*
+Package sortby is a  hybrid, non stable sort based on go's standard sort but with
 all less function and many swaps inlined to sort a list of ints by an acompanying list
 of floats as needed in random forest training. It is about 30-40% faster then the
-standard sort.*/
-package sortby
+standard sort.
+*/
+package learn
 
-import ()
-
-//SortBy will sort the values in cases and vals by the values in vals in increasing order.
-//If vals is longer then cases only the coresponding section will be sorted.
+// SortBy will sort the values in cases and vals by the values in vals in increasing order.
+// If vals is longer then cases only the coresponding section will be sorted.
 func SortBy(cases *[]int, vals *[]float64) {
 	n := len(*cases)
 	// Switch to heapsort if depth of 2*ceil(lg(n+1)) is reached.
@@ -21,7 +21,7 @@ func SortBy(cases *[]int, vals *[]float64) {
 	//heapsort(cases, vals, 0, n)
 }
 
-//Swap exchanges the ith and jth cases.
+// Swap exchanges the ith and jth cases.
 func swap(cases *[]int, vals *[]float64, i int, j int) {
 	//swap(cases, vals,
 	c := *cases
@@ -290,9 +290,9 @@ func heapSort(cases *[]int, vals *[]float64, a, b int) {
 	}
 }
 
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
+// func min(a, b int) int {
+// 	if a < b {
+// 		return a
+// 	}
+// 	return b
+// }

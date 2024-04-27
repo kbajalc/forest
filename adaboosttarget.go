@@ -1,4 +1,4 @@
-package CloudForest
+package learn
 
 import (
 	"math"
@@ -6,7 +6,6 @@ import (
 
 /*
 AdaBoostTarget wraps a numerical feature as a target for us in Adaptive Boosting (AdaBoost)
-
 */
 type AdaBoostTarget struct {
 	CatFeature
@@ -44,8 +43,8 @@ func (target *AdaBoostTarget) SplitImpurity(l *[]int, r *[]int, m *[]int, allocs
 	return
 }
 
-//UpdateSImpFromAllocs willl be called when splits are being built by moving cases from r to l as in learning from numerical variables.
-//Here it just wraps SplitImpurity but it can be implemented to provide further optimization.
+// UpdateSImpFromAllocs willl be called when splits are being built by moving cases from r to l as in learning from numerical variables.
+// Here it just wraps SplitImpurity but it can be implemented to provide further optimization.
 func (target *AdaBoostTarget) UpdateSImpFromAllocs(l *[]int, r *[]int, m *[]int, allocs *BestSplitAllocs, movedRtoL *[]int) (impurityDecrease float64) {
 	var cat, i int
 	lcounter := *allocs.LCounter
@@ -74,7 +73,7 @@ func (target *AdaBoostTarget) UpdateSImpFromAllocs(l *[]int, r *[]int, m *[]int,
 	return
 }
 
-//Impurity is an AdaCosting that uses the weights specified in weights.
+// Impurity is an AdaCosting that uses the weights specified in weights.
 func (target *AdaBoostTarget) Impurity(cases *[]int, counter *[]int) (e float64) {
 	e = 0.0
 	//m := target.Modei(cases)
@@ -85,7 +84,7 @@ func (target *AdaBoostTarget) Impurity(cases *[]int, counter *[]int) (e float64)
 	return
 }
 
-//ImpFromCounts recalculates gini impurity from class counts for us in intertive updates.
+// ImpFromCounts recalculates gini impurity from class counts for us in intertive updates.
 func (target *AdaBoostTarget) ImpFromCounts(cases *[]int, counter *[]int) (e float64) {
 
 	var m, mc int
@@ -110,8 +109,8 @@ func (target *AdaBoostTarget) ImpFromCounts(cases *[]int, counter *[]int) (e flo
 
 }
 
-//Boost performs categorical adaptive boosting using the specified partition and
-//returns the weight that tree that generated the partition should be given.
+// Boost performs categorical adaptive boosting using the specified partition and
+// returns the weight that tree that generated the partition should be given.
 func (t *AdaBoostTarget) Boost(leaves *[][]int) (weight float64) {
 	weight = 0.0
 	counter := make([]int, t.NCats())

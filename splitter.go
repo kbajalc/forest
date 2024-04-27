@@ -1,12 +1,10 @@
-package CloudForest
+package learn
 
-import (
 //"fmt"
-)
 
-//Splitter contains fields that can be used to cases by a single feature. The split
-//can be either numerical in which case it is defined by the Value field or
-//categorical in which case it is defined by the Left and Right fields.
+// Splitter contains fields that can be used to cases by a single feature. The split
+// can be either numerical in which case it is defined by the Value field or
+// categorical in which case it is defined by the Left and Right fields.
 type Splitter struct {
 	Feature   string
 	Numerical bool

@@ -1,6 +1,4 @@
-package CloudForest
-
-import ()
+package learn
 
 // ScikitNode
 // cdef struct Node:
@@ -36,14 +34,14 @@ type ScikitNode struct {
 //     cdef public SIZE_t n_outputs         # Number of outputs in y
 //     cdef public SIZE_t max_n_classes     # max(n_classes)
 
-//     # Inner structures: values are stored separately from node structure,
-//     # since size is determined at runtime.
-//     cdef public SIZE_t max_depth         # Max depth of the tree
-//     cdef public SIZE_t node_count        # Counter for node IDs
-//     cdef public SIZE_t capacity          # Capacity of tree, in terms of nodes
-//     cdef Node* nodes                     # Array of nodes
-//     cdef double* value                   # (capacity, n_outputs, max_n_classes) array of values
-//     cdef SIZE_t value_stride             # = n_outputs * max_n_classes
+// # Inner structures: values are stored separately from node structure,
+// # since size is determined at runtime.
+// cdef public SIZE_t max_depth         # Max depth of the tree
+// cdef public SIZE_t node_count        # Counter for node IDs
+// cdef public SIZE_t capacity          # Capacity of tree, in terms of nodes
+// cdef Node* nodes                     # Array of nodes
+// cdef double* value                   # (capacity, n_outputs, max_n_classes) array of values
+// cdef SIZE_t value_stride             # = n_outputs * max_n_classes
 type ScikitTree struct {
 	NFeatures   int           `json:"n_features"`
 	NClasses    []int         `json:"n_classes"`

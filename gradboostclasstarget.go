@@ -1,4 +1,4 @@
-package CloudForest
+package learn
 
 import (
 	"fmt"
@@ -75,7 +75,7 @@ func (f *GradBoostClassTarget) Intercept() float64 {
 	return f.Prior
 }
 
-//BUG(ryan) does GradBoostingTarget need seperate residuals and values?
+// BUG(ryan) does GradBoostingTarget need seperate residuals and values?
 func (f *GradBoostClassTarget) Boost(leaves *[][]int, preds *[]string) (weight float64) {
 	for i, cases := range *leaves {
 		f.Update(&cases, ParseFloat((*preds)[i]))
@@ -106,8 +106,8 @@ func (f *GradBoostClassTarget) FindPredicted(cases []int) (pred string) {
 
 }
 
-//Update updates the underlying numeric data by subtracting the mean*weight of the
-//specified cases from the value for those cases.
+// Update updates the underlying numeric data by subtracting the mean*weight of the
+// specified cases from the value for those cases.
 func (f *GradBoostClassTarget) Update(cases *[]int, predicted float64) {
 	for _, i := range *cases {
 		pred := f.Pred.Get(i) + f.LearnRate*predicted

@@ -1,13 +1,13 @@
-package CloudForest
+package learn
 
 import (
 	"strings"
 	"testing"
 )
 
-//A toy feature matrix where either of the first
-//two variables should be easilly predictible
-//by the other by a single greedy tree.
+// A toy feature matrix where either of the first
+// two variables should be easilly predictible
+// by the other by a single greedy tree.
 var constantsfm = `.	0	1	2	3	4	5	6	7
 C:CatTarget	0	0	0	0	0	1	1	1
 N:GoodVals	0	0	0	0	0	1	1	1

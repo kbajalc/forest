@@ -1,4 +1,4 @@
-package CloudForest
+package learn
 
 import (
 	"archive/zip"
@@ -11,8 +11,8 @@ import (
 	"strings"
 )
 
-//FeatureMatrix contains a slice of Features and a Map to look of the index of a feature
-//by its string id.
+// FeatureMatrix contains a slice of Features and a Map to look of the index of a feature
+// by its string id.
 type FeatureMatrix struct {
 	Data       []Feature
 	Map        map[string]int
@@ -102,7 +102,7 @@ func (fm *FeatureMatrix) OneHot() *FeatureMatrix {
 	return out
 }
 
-//WriteCases writes a new feature matrix with the specified cases to the the provided writer.
+// WriteCases writes a new feature matrix with the specified cases to the the provided writer.
 func (fm *FeatureMatrix) WriteCases(w io.Writer, cases []int) (err error) {
 	vals := make([]string, 0, len(cases)+1)
 
@@ -309,10 +309,10 @@ func (fm *FeatureMatrix) ImputeMissing() {
 	}
 }
 
-//LoadCases will load data stored case by case from a cvs reader into a
-//feature matrix that has allready been filled with the coresponding empty
-//features. It is a lower level method generally called after inital setup to parse
-//a fm, arff, csv etc.
+// LoadCases will load data stored case by case from a cvs reader into a
+// feature matrix that has allready been filled with the coresponding empty
+// features. It is a lower level method generally called after inital setup to parse
+// a fm, arff, csv etc.
 func (fm *FeatureMatrix) LoadCases(data *csv.Reader, rowlabels bool) {
 	count := 0
 	for {
@@ -340,10 +340,10 @@ func (fm *FeatureMatrix) LoadCases(data *csv.Reader, rowlabels bool) {
 
 }
 
-//Parse an AFM (annotated feature matrix) out of an io.Reader
-//AFM format is a tsv with row and column headers where the row headers start with
-//N: indicating numerical, C: indicating categorical or B: indicating boolean
-//For this parser features without N: are assumed to be categorical
+// Parse an AFM (annotated feature matrix) out of an io.Reader
+// AFM format is a tsv with row and column headers where the row headers start with
+// N: indicating numerical, C: indicating categorical or B: indicating boolean
+// For this parser features without N: are assumed to be categorical
 func ParseAFM(input io.Reader) *FeatureMatrix {
 	data := make([]Feature, 0, 100)
 	lookup := make(map[string]int, 0)
@@ -407,7 +407,7 @@ func ParseAFM(input io.Reader) *FeatureMatrix {
 	return &FeatureMatrix{data, lookup, headers}
 }
 
-//LoadAFM loads a, possible zipped, FeatureMatrix specified by filename
+// LoadAFM loads a, possible zipped, FeatureMatrix specified by filename
 func LoadAFM(filename string) (fm *FeatureMatrix, err error) {
 
 	r, err := zip.OpenReader(filename)
@@ -438,12 +438,12 @@ func LoadAFM(filename string) (fm *FeatureMatrix, err error) {
 	return
 }
 
-//ParseFeature parses a Feature from an array of strings and a capacity
-//capacity is the number of cases and will usually be len(record)-1 but
-//but doesn't need to be calculated for every row of a large file.
-//The type of the feature us inferred from the start of the first (header) field
-//in record:
-//"N:"" indicating numerical, anything else (usually "C:" and "B:") for categorical
+// ParseFeature parses a Feature from an array of strings and a capacity
+// capacity is the number of cases and will usually be len(record)-1 but
+// but doesn't need to be calculated for every row of a large file.
+// The type of the feature us inferred from the start of the first (header) field
+// in record:
+// "N:"" indicating numerical, anything else (usually "C:" and "B:") for categorical
 func ParseFeature(record []string) Feature {
 	capacity := len(record)
 	switch record[0][0:2] {

@@ -3,10 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/ryanbressler/CloudForest"
 	"log"
 	"os"
 	"strings"
+
+	CloudForest "ecg.mk/learn"
 )
 
 func main() {

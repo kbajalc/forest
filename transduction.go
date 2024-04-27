@@ -1,6 +1,4 @@
-package CloudForest
-
-import ()
+package learn
 
 /*
 TransTarget is used for semi supervised transduction trees [1] that balance compine supervised impurity with
@@ -34,7 +32,8 @@ type TransTarget struct {
 	MaxCats   int
 }
 
-/*NewTransTarget returns a TransTarget using the supervised Impurity from the provided CatFeature t,
+/*
+NewTransTarget returns a TransTarget using the supervised Impurity from the provided CatFeature t,
 Density in the specified Features fm (excluding any with the same name as t), considering the class label
 provided in "unlabeled" as unlabeled for transduction. Alpha is the weight of the unspervised term relative to
 the supervised and ncases is the number of cases that will be called at the root of the tree (may be depreciated as not needed).
@@ -74,8 +73,8 @@ func (target *TransTarget) SplitImpurity(l *[]int, r *[]int, m *[]int, allocs *B
 	return
 }
 
-//UpdateSImpFromAllocs willl be called when splits are being built by moving cases from r to l as in learning from numerical variables.
-//Here it just wraps SplitImpurity but it can be implemented to provide further optimization.
+// UpdateSImpFromAllocs willl be called when splits are being built by moving cases from r to l as in learning from numerical variables.
+// Here it just wraps SplitImpurity but it can be implemented to provide further optimization.
 func (target *TransTarget) UpdateSImpFromAllocs(l *[]int, r *[]int, m *[]int, allocs *BestSplitAllocs, movedRtoL *[]int) (impurityDecrease float64) {
 	return target.SplitImpurity(l, r, m, allocs)
 }
@@ -91,7 +90,8 @@ func (target *TransTarget) Impurity(cases *[]int, counter *[]int) (e float64) {
 	return
 }
 
-/*TransTarget.Density uses an impurity designed to maximize the density within each side of the split
+/*
+TransTarget.Density uses an impurity designed to maximize the density within each side of the split
 based on the method in "Density Estimating Trees" by Parikshit Ram and Alexander G. Gray.
 It loops over all of the non target features and for the ones with non zero span calculates product(span_i)/(t*t)
 where t is the number of cases.
@@ -102,7 +102,8 @@ handles numerical features for which diffrent splits will have diffrent total sp
 distance between the points on either side of the split point better then categorical
 features for which the total span of a split will allways be the number of categories.
 
-The origional paper also included N which is not used here.*/
+The origional paper also included N which is not used here.
+*/
 func (target *TransTarget) Density(cases *[]int, counter *[]int) (e float64) {
 	t := len(*cases)
 	//e = float64(t*t) / float64(target.N*target.N)
@@ -131,9 +132,9 @@ func (target *TransTarget) Density(cases *[]int, counter *[]int) (e float64) {
 	return
 }
 
-//TransTarget.FindPredicted returns the prediction of the specified cases which is the majority
-//class that is not the unlabeled class. A set of cases will only be predicted to be the ulabeled
-//class if has no labeled points.
+// TransTarget.FindPredicted returns the prediction of the specified cases which is the majority
+// class that is not the unlabeled class. A set of cases will only be predicted to be the ulabeled
+// class if has no labeled points.
 func (target *TransTarget) FindPredicted(cases []int) string {
 	counts := make([]int, target.NCats())
 	for _, i := range cases {

@@ -1,11 +1,11 @@
-package CloudForest
+package learn
 
 import (
 	"math/rand"
 )
 
-//BestSplitAllocs contains reusable allocations for split searching and evaluation.
-//Seprate instances should be used in each go routing doing learning.
+// BestSplitAllocs contains reusable allocations for split searching and evaluation.
+// Seprate instances should be used in each go routing doing learning.
 type BestSplitAllocs struct {
 	L              []int //Allocated to size
 	R              []int
@@ -32,9 +32,9 @@ type BestSplitAllocs struct {
 	Rnd            *rand.Rand //prevent contention on global rand source
 }
 
-//NewBestSplitAllocs initializes all of the reusable allocations for split
-//searching to the appropriate size. nTotalCases should be number of total
-//cases in the feature matrix being analyzed.
+// NewBestSplitAllocs initializes all of the reusable allocations for split
+// searching to the appropriate size. nTotalCases should be number of total
+// cases in the feature matrix being analyzed.
 func NewBestSplitAllocs(nTotalCases int, target Target) (bsa *BestSplitAllocs) {
 	left := make([]int, 0, nTotalCases)
 	right := make([]int, 0, nTotalCases)

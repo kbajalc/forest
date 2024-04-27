@@ -1,4 +1,4 @@
-package CloudForest
+package learn
 
 import (
 	"math"
@@ -9,13 +9,12 @@ NPTarget wraps a categorical feature for use in experimental approximate Neyman-
 classification...constraints and optimization are done on percision false
 positive/negative rate.
 
-It uses an impurity measure with a soft constraint from the seccond family presented in
+# It uses an impurity measure with a soft constraint from the seccond family presented in
 
 "Comparison and Design of Neyman-Pearson Classiﬁers"
 Clayton Scott,  October 2005
 
 http://www.stat.rice.edu/~cscott/pubs/npdesign.pdf
-
 
 N(f) = κ max((R0(f) − α), 0) + R1(f)
 
@@ -34,9 +33,9 @@ type NPTarget struct {
 	Kappa float64
 }
 
-//NewNPTarget wraps a Categorical Feature for NP Classification. It accepts
-//a string representing the contstrained label and floats Alpha and Kappa
-//representing the constraint and constraint weight.
+// NewNPTarget wraps a Categorical Feature for NP Classification. It accepts
+// a string representing the contstrained label and floats Alpha and Kappa
+// representing the constraint and constraint weight.
 func NewNPTarget(f CatFeature, Pos string, Alpha, Kappa float64) *NPTarget {
 	return &NPTarget{f, f.CatToNum(Pos), Alpha, Kappa}
 }
@@ -60,8 +59,8 @@ func (target *NPTarget) SplitImpurity(l *[]int, r *[]int, m *[]int, allocs *Best
 	return
 }
 
-//UpdateSImpFromAllocs willl be called when splits are being built by moving cases from r to l
-//to avoid recalulatign the entire split impurity.
+// UpdateSImpFromAllocs willl be called when splits are being built by moving cases from r to l
+// to avoid recalulatign the entire split impurity.
 func (target *NPTarget) UpdateSImpFromAllocs(l *[]int, r *[]int, m *[]int, allocs *BestSplitAllocs, movedRtoL *[]int) (impurityDecrease float64) {
 	var cat, i int
 	lcounter := *allocs.LCounter
@@ -90,8 +89,8 @@ func (target *NPTarget) UpdateSImpFromAllocs(l *[]int, r *[]int, m *[]int, alloc
 	return
 }
 
-//FindPredicted does a mode calulation with the count of the positive/constrained
-//class corrected.
+// FindPredicted does a mode calulation with the count of the positive/constrained
+// class corrected.
 func (target *NPTarget) FindPredicted(cases []int) (pred string) {
 
 	mi := 0
@@ -115,7 +114,7 @@ func (target *NPTarget) FindPredicted(cases []int) (pred string) {
 
 }
 
-//ImpFromCounts recalculates gini impurity from class counts for us in intertive updates.
+// ImpFromCounts recalculates gini impurity from class counts for us in intertive updates.
 func (target *NPTarget) ImpFromCounts(t int, counter *[]int) (e float64) {
 
 	var totalpos, totalneg, mi int
@@ -150,8 +149,8 @@ func (target *NPTarget) ImpFromCounts(t int, counter *[]int) (e float64) {
 
 }
 
-//NPTarget.Impurity implements an impurity that minimizes false negatives subject
-//to a soft constrain on fale positives.
+// NPTarget.Impurity implements an impurity that minimizes false negatives subject
+// to a soft constrain on fale positives.
 func (target *NPTarget) Impurity(cases *[]int, counter *[]int) (e float64) {
 
 	target.CountPerCat(cases, counter)

@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/ryanbressler/CloudForest"
 	"log"
 	"os"
 	"runtime"
 	"strings"
+
+	CloudForest "ecg.mk/learn"
 )
 
 func main() {

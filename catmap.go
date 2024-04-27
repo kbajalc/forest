@@ -1,8 +1,7 @@
-package CloudForest
+package learn
 
-import ()
-
-/*CatMap is for mapping categorical values to integers.
+/*
+CatMap is for mapping categorical values to integers.
 It contains:
 
 	Map  : a map of ints by the string used for the category
@@ -15,9 +14,9 @@ type CatMap struct {
 	Back []string       // map categories from Num to string
 }
 
-//CatToNum provides the int equivalent of the provided categorical value
-//if it already exists or adds it to the map and returns the new value if
-//it doesn't.
+// CatToNum provides the int equivalent of the provided categorical value
+// if it already exists or adds it to the map and returns the new value if
+// it doesn't.
 func (cm *CatMap) CatToNum(value string) (numericv int) {
 	numericv, exsists := cm.Map[value]
 	if exsists == false {
@@ -29,12 +28,12 @@ func (cm *CatMap) CatToNum(value string) (numericv int) {
 	return
 }
 
-//NumToCat returns the catagory label that has been assigned i
+// NumToCat returns the catagory label that has been assigned i
 func (cm *CatMap) NumToCat(i int) (value string) {
 	return cm.Back[i]
 }
 
-//NCats returns the number of distinct catagories.
+// NCats returns the number of distinct catagories.
 func (cm *CatMap) NCats() (n int) {
 	if cm.Back == nil {
 		n = 0

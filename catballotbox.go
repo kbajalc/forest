@@ -1,30 +1,30 @@
-package CloudForest
+package learn
 
 import (
 	"sync"
 )
 
-//CatBallot is used insideof CatBallotBox to record catagorical votes in a thread safe
-//manner.
+// CatBallot is used insideof CatBallotBox to record catagorical votes in a thread safe
+// manner.
 type CatBallot struct {
 	Mutex sync.Mutex
 	Map   map[int]float64
 }
 
-//NewCatBallot returns a pointer to an initalized CatBallot with a 0 size Map.
+// NewCatBallot returns a pointer to an initalized CatBallot with a 0 size Map.
 func NewCatBallot() (cb *CatBallot) {
 	cb = new(CatBallot)
 	cb.Map = make(map[int]float64, 0)
 	return
 }
 
-//CatBallotBox keeps track of votes by trees in a thread safe manner.
+// CatBallotBox keeps track of votes by trees in a thread safe manner.
 type CatBallotBox struct {
 	*CatMap
 	Box []*CatBallot
 }
 
-//NewCatBallotBox builds a new ballot box for the number of cases specified by "size".
+// NewCatBallotBox builds a new ballot box for the number of cases specified by "size".
 func NewCatBallotBox(size int) *CatBallotBox {
 	bb := CatBallotBox{
 		&CatMap{make(map[string]int),
@@ -36,8 +36,8 @@ func NewCatBallotBox(size int) *CatBallotBox {
 	return &bb
 }
 
-//Vote registers a vote that case "casei" should be predicted to be the
-//category "pred".
+// Vote registers a vote that case "casei" should be predicted to be the
+// category "pred".
 func (bb *CatBallotBox) Vote(casei int, pred string, weight float64) {
 	predn := bb.CatToNum(pred)
 	bb.Box[casei].Mutex.Lock()
@@ -48,9 +48,9 @@ func (bb *CatBallotBox) Vote(casei int, pred string, weight float64) {
 	bb.Box[casei].Mutex.Unlock()
 }
 
-//Tally tallies the votes for the case specified by i as
-//if it is a Categorical or boolean feature. Ie it returns the mode
-//(the most frequent value) of all votes.
+// Tally tallies the votes for the case specified by i as
+// if it is a Categorical or boolean feature. Ie it returns the mode
+// (the most frequent value) of all votes.
 func (bb *CatBallotBox) Tally(i int) (predicted string) {
 	predictedn := 0
 	votes := 0.0
@@ -85,7 +85,6 @@ Y' are the estimated labels
 xi is the set of samples with the ith actual label
 
 Case for which the true category is not known are ignored.
-
 */
 func (bb *CatBallotBox) TallyError(feature Feature) (e float64) {
 	catfeature := feature.(CatFeature)

@@ -2,7 +2,7 @@ CloudForest
 ==============
 
 [![Build Status](https://travis-ci.org/ryanbressler/CloudForest.png?branch=master)](https://travis-ci.org/ryanbressler/CloudForest) 
-[![GoDoc](https://godoc.org/github.com/ryanbressler/CloudForest?status.svg)](https://godoc.org/github.com/ryanbressler/CloudForest)
+[![GoDoc](https://godoc.org/ecg.mk/learn?status.svg)](https://godoc.org/ecg.mk/learn)
 
 [Google Group](https://groups.google.com/forum/#!forum/cloudforest-dev)
 
@@ -56,10 +56,10 @@ CloudForest can be used as a library in go programs.
 This Document covers command line usage, file formats and some algorithmic background.
 
 Documentation for coding against CloudForest has been generated with godoc and can be viewed live at:
-http://godoc.org/github.com/ryanbressler/CloudForest
+http://godoc.org/ecg.mk/learn
 
 Pull requests, spelling corrections and bug reports are welcome; Code Repo and Issue tracker can be found at:
-https://github.com/ryanbressler/CloudForest
+https://ecg.mk/learn
 
 A google discussion group can be found at:
 https://groups.google.com/forum/#!forum/cloudforest-dev
@@ -75,26 +75,26 @@ Installation
 With [go installed](http://golang.org/doc/install):
 
 ```bash
-go get github.com/ryanbressler/CloudForest
-go install github.com/ryanbressler/CloudForest/growforest
-go install github.com/ryanbressler/CloudForest/applyforest
+go get ecg.mk/learn
+go install ecg.mk/learn/growforest
+go install ecg.mk/learn/applyforest
 
 #optional utilities
-go install github.com/ryanbressler/CloudForest/leafcount
-go install github.com/ryanbressler/CloudForest/utils/nfold
-go install github.com/ryanbressler/CloudForest/utils/toafm
+go install ecg.mk/learn/leafcount
+go install ecg.mk/learn/utils/nfold
+go install ecg.mk/learn/utils/toafm
 ```
 
 To update to the latest version use the -u flag
 ```bash
-go get -u github.com/ryanbressler/CloudForest
-go install -u github.com/ryanbressler/CloudForest/growforest
-go install -u github.com/ryanbressler/CloudForest/applyforest
+go get -u ecg.mk/learn
+go install -u ecg.mk/learn/growforest
+go install -u ecg.mk/learn/applyforest
 
 #optional utilities
-go install -u github.com/ryanbressler/CloudForest/leafcount
-go install -u github.com/ryanbressler/CloudForest/utils/nfold
-go install -u github.com/ryanbressler/CloudForest/utils/toafm
+go install -u ecg.mk/learn/leafcount
+go install -u ecg.mk/learn/utils/nfold
+go install -u ecg.mk/learn/utils/toafm
 ```
 
 

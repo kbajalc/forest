@@ -1,4 +1,4 @@
-package CloudForest
+package learn
 
 import (
 	"math"
@@ -45,13 +45,13 @@ func (target *NumAdaBoostTarget) SplitImpurity(l *[]int, r *[]int, m *[]int, all
 	return
 }
 
-//UpdateSImpFromAllocs willl be called when splits are being built by moving cases from r to l as in learning from numerical variables.
-//Here it just wraps SplitImpurity but it can be implemented to provide further optimization.
+// UpdateSImpFromAllocs willl be called when splits are being built by moving cases from r to l as in learning from numerical variables.
+// Here it just wraps SplitImpurity but it can be implemented to provide further optimization.
 func (target *NumAdaBoostTarget) UpdateSImpFromAllocs(l *[]int, r *[]int, m *[]int, allocs *BestSplitAllocs, movedRtoL *[]int) (impurityDecrease float64) {
 	return target.SplitImpurity(l, r, m, allocs)
 }
 
-//NumAdaBoostTarget.Impurity is an AdaBoosting that uses the weights specified in NumAdaBoostTarget.weights.
+// NumAdaBoostTarget.Impurity is an AdaBoosting that uses the weights specified in NumAdaBoostTarget.weights.
 func (target *NumAdaBoostTarget) Impurity(cases *[]int, counter *[]int) (e float64) {
 	e = 0.0
 	m := target.Predicted(cases)
@@ -64,19 +64,19 @@ func (target *NumAdaBoostTarget) Impurity(cases *[]int, counter *[]int) (e float
 	return
 }
 
-//AdaBoostTarget.Boost performs numerical adaptive boosting using the specified partition and
-//returns the weight that tree that generated the partition should be given.
-//Trees with error greater then the impurity of the total feature (NormFactor) times the number
-//of partions are given zero weight. Other trees have tree weight set to:
+// AdaBoostTarget.Boost performs numerical adaptive boosting using the specified partition and
+// returns the weight that tree that generated the partition should be given.
+// Trees with error greater then the impurity of the total feature (NormFactor) times the number
+// of partions are given zero weight. Other trees have tree weight set to:
 //
 // weight = math.Log(1 / norm)
 //
-//and weights updated to:
+// and weights updated to:
 //
 // t.Weights[c] = t.Weights[c] * math.Exp(t.Error(&[]int{c}, m)*weight)
 //
-//These functions are chosen to provide a rough analog to catagorical adaptive boosting for
-//numerical data with unbounded error.
+// These functions are chosen to provide a rough analog to catagorical adaptive boosting for
+// numerical data with unbounded error.
 func (t *NumAdaBoostTarget) Boost(leaves *[][]int) (weight float64) {
 	if len(*leaves) == 0 {
 		return 0.0

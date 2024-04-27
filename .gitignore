@@ -1,9 +1,9 @@
 #ignore binaries
-growforest
-applyforest
-leafcount
-toafm
-nfold
+# growforest
+# applyforest
+# leafcount
+# toafm
+# nfold
 
 #ignore common files used/generated in local testing
 *.libsvm

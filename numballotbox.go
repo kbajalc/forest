@@ -1,4 +1,4 @@
-package CloudForest
+package learn
 
 import (
 	"fmt"
@@ -7,13 +7,13 @@ import (
 	"strconv"
 )
 
-//Keeps track of votes by trees.
-//Voteing is thread safe.
+// Keeps track of votes by trees.
+// Voteing is thread safe.
 type NumBallotBox struct {
 	box []*RunningMean
 }
 
-//Build a new ballot box for the number of cases specified by "size".
+// Build a new ballot box for the number of cases specified by "size".
 func NewNumBallotBox(size int) *NumBallotBox {
 	bb := NumBallotBox{
 		make([]*RunningMean, 0, size)}
@@ -23,7 +23,7 @@ func NewNumBallotBox(size int) *NumBallotBox {
 	return &bb
 }
 
-//Vote parses the float in the string and votes for it
+// Vote parses the float in the string and votes for it
 func (bb *NumBallotBox) Vote(casei int, pred string, weight float64) {
 	v, err := strconv.ParseFloat(pred, 64)
 	if err == nil {
@@ -32,8 +32,8 @@ func (bb *NumBallotBox) Vote(casei int, pred string, weight float64) {
 
 }
 
-//TallyNumerical tallies the votes for the case specified by i as
-//if it is a Numerical feature. Ie it returns the mean of all votes.
+// TallyNumerical tallies the votes for the case specified by i as
+// if it is a Numerical feature. Ie it returns the mean of all votes.
 func (bb *NumBallotBox) TallyNum(i int) (predicted float64) {
 	predicted, _ = bb.box[i].Read()
 	return
@@ -49,13 +49,13 @@ func (bb *NumBallotBox) Tally(i int) (predicted string) {
 	return
 }
 
-//TallySquareError returns the error of the votes vs the provided feature.
-//For categorical features it returns the error rate
-//For numerical features it returns mean squared error.
-//The provided feature must use the same index as the feature matrix
-//the ballot box was constructed with.
-//Missing values are ignored.
-//Gini impurity is not used so this is not for use in rf implementations.
+// TallySquareError returns the error of the votes vs the provided feature.
+// For categorical features it returns the error rate
+// For numerical features it returns mean squared error.
+// The provided feature must use the same index as the feature matrix
+// the ballot box was constructed with.
+// Missing values are ignored.
+// Gini impurity is not used so this is not for use in rf implementations.
 func (bb *NumBallotBox) TallySquaredError(feature Feature) (e float64) {
 	e = 0.0
 
@@ -81,7 +81,7 @@ func (bb *NumBallotBox) TallySquaredError(feature Feature) (e float64) {
 
 }
 
-//TallyScore returns the squared error (unexplained variance) divided by the data variance.
+// TallyScore returns the squared error (unexplained variance) divided by the data variance.
 func (bb *NumBallotBox) TallyError(feature Feature) (e float64) {
 	mean := 0.0
 	r2 := 0.0
@@ -110,7 +110,7 @@ func (bb *NumBallotBox) TallyError(feature Feature) (e float64) {
 
 }
 
-//Tally score returns the R2 score or coefichent of determination.
+// Tally score returns the R2 score or coefichent of determination.
 func (bb *NumBallotBox) TallyR2Score(feature Feature) (e float64) {
 
 	e = 1 - bb.TallyError(feature)

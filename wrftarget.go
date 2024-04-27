@@ -1,4 +1,4 @@
-package CloudForest
+package learn
 
 /*
 WRFTarget wraps a numerical feature as a target for us weigted random forest.
@@ -40,8 +40,8 @@ func (target *WRFTarget) SplitImpurity(l *[]int, r *[]int, m *[]int, allocs *Bes
 	return
 }
 
-//UpdateSImpFromAllocs willl be called when splits are being built by moving cases from r to l
-//to avoid recalulatign the entire split impurity.
+// UpdateSImpFromAllocs willl be called when splits are being built by moving cases from r to l
+// to avoid recalulatign the entire split impurity.
 func (target *WRFTarget) UpdateSImpFromAllocs(l *[]int, r *[]int, m *[]int, allocs *BestSplitAllocs, movedRtoL *[]int) (impurityDecrease float64) {
 	var cat, i int
 	lcounter := *allocs.LCounter
@@ -70,7 +70,7 @@ func (target *WRFTarget) UpdateSImpFromAllocs(l *[]int, r *[]int, m *[]int, allo
 	return
 }
 
-//Impurity is Gini impurity that uses the weights specified in WRFTarget.weights.
+// Impurity is Gini impurity that uses the weights specified in WRFTarget.weights.
 func (target *WRFTarget) Impurity(cases *[]int, counter *[]int) (e float64) {
 
 	target.CountPerCat(cases, counter)
@@ -78,7 +78,7 @@ func (target *WRFTarget) Impurity(cases *[]int, counter *[]int) (e float64) {
 	return target.ImpFromCounts(counter)
 }
 
-//ImpFromCounts recalculates gini impurity from class counts for us in intertive updates.
+// ImpFromCounts recalculates gini impurity from class counts for us in intertive updates.
 func (target *WRFTarget) ImpFromCounts(counter *[]int) (e float64) {
 
 	total := 0.0
@@ -96,7 +96,7 @@ func (target *WRFTarget) ImpFromCounts(counter *[]int) (e float64) {
 
 }
 
-//FindPredicted finds the predicted target as the weighted catagorical Mode.
+// FindPredicted finds the predicted target as the weighted catagorical Mode.
 func (target *WRFTarget) FindPredicted(cases []int) (pred string) {
 
 	counts := make([]int, target.NCats())

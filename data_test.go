@@ -1,4 +1,4 @@
-package CloudForest
+package learn
 
 import (
 	"math/rand"
@@ -7,9 +7,9 @@ import (
 	"time"
 )
 
-//A toy feature matrix where either of the first
-//two variables should be easilly predictible
-//by the other by a single greedy tree.
+// A toy feature matrix where either of the first
+// two variables should be easilly predictible
+// by the other by a single greedy tree.
 var fm = `.	0	1	2	3	4	5	6	7
 N:NumTarget	.0	.0	.0	.0	.0	.9	.9	.9
 C:CatTarget	0	0	0	0	0	1	1	1
@@ -319,7 +319,7 @@ func TestMissing(t *testing.T) {
 
 }
 
-//Test classification target typs on iris data set. Also test arff loading.
+// Test classification target typs on iris data set. Also test arff loading.
 func TestIris(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping classification tests on iris data set.")
@@ -428,7 +428,7 @@ func TestIris(t *testing.T) {
 
 }
 
-//Test classification target typs on iris data set. Also test arff loading.
+// Test classification target typs on iris data set. Also test arff loading.
 func TestTwoClassIris(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping classification tests on iris data set.")
@@ -516,7 +516,7 @@ func TestTwoClassIris(t *testing.T) {
 
 }
 
-//Test classification target typs on iris data set. Also test arff loading.
+// Test classification target typs on iris data set. Also test arff loading.
 func TestBoston(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping regression tests on boston data set.")

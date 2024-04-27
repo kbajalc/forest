@@ -1,4 +1,4 @@
-package CloudForest
+package learn
 
 import (
 	"math/rand"
@@ -8,14 +8,14 @@ type Bagger interface {
 	Sample(samples *[]int, n int)
 }
 
-//BalancedSampler provides for random sampelign of integers (usually case indexes)
-//in a way that ensures a balanced presence of classes.
+// BalancedSampler provides for random sampelign of integers (usually case indexes)
+// in a way that ensures a balanced presence of classes.
 type BalancedSampler struct {
 	Cases [][]int
 }
 
-//NeaBalancedSampler initalizes a balanced sampler that will evenly balance cases
-//between the classes present in the provided DesnseeCatFeature.
+// NeaBalancedSampler initalizes a balanced sampler that will evenly balance cases
+// between the classes present in the provided DesnseeCatFeature.
 func NewBalancedSampler(catf *DenseCatFeature) (s *BalancedSampler) {
 	s = &BalancedSampler{make([][]int, 0, catf.NCats())}
 
@@ -31,7 +31,7 @@ func NewBalancedSampler(catf *DenseCatFeature) (s *BalancedSampler) {
 	return
 }
 
-//Sample samples n integers in a balnced-with-replacment fashion into the provided array.
+// Sample samples n integers in a balnced-with-replacment fashion into the provided array.
 func (s *BalancedSampler) Sample(samples *[]int, n int) {
 	(*samples) = (*samples)[0:0]
 	nCases := len(s.Cases)
@@ -43,15 +43,15 @@ func (s *BalancedSampler) Sample(samples *[]int, n int) {
 
 }
 
-//SecondaryBalancedSampler roughly balances the target feature within the classes of another catagorical
-//feature while roughly preserving the origional rate of the secondary feature.
+// SecondaryBalancedSampler roughly balances the target feature within the classes of another catagorical
+// feature while roughly preserving the origional rate of the secondary feature.
 type SecondaryBalancedSampler struct {
 	Total    int
 	Counts   []int
 	Samplers [][][]int
 }
 
-//NewSecondaryBalancedSampler returns an initalized balanced sampler.
+// NewSecondaryBalancedSampler returns an initalized balanced sampler.
 func NewSecondaryBalancedSampler(target *DenseCatFeature, balanceby *DenseCatFeature) (s *SecondaryBalancedSampler) {
 	nSecondaryCats := balanceby.NCats()
 	s = &SecondaryBalancedSampler{0, make([]int, nSecondaryCats, nSecondaryCats), make([][][]int, 0, nSecondaryCats)}

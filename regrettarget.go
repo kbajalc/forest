@@ -1,6 +1,4 @@
-package CloudForest
-
-import ()
+package learn
 
 /*
 RegretTarget wraps a categorical feature for use in regret driven classification.
@@ -19,13 +17,15 @@ type RegretTarget struct {
 	Costs []float64
 }
 
-//NewRegretTarget creates a RefretTarget and initializes RegretTarget.Costs to the proper length.
+// NewRegretTarget creates a RefretTarget and initializes RegretTarget.Costs to the proper length.
 func NewRegretTarget(f CatFeature) *RegretTarget {
 	return &RegretTarget{f, make([]float64, f.NCats())}
 }
 
-/*RegretTarget.SetCosts puts costs in a map[string]float64 by feature name into the proper
-entries in RegretTarget.Costs.*/
+/*
+RegretTarget.SetCosts puts costs in a map[string]float64 by feature name into the proper
+entries in RegretTarget.Costs.
+*/
 func (target *RegretTarget) SetCosts(costmap map[string]float64) {
 	for i := 0; i < target.NCats(); i++ {
 		c := target.NumToCat(i)
@@ -52,8 +52,8 @@ func (target *RegretTarget) SplitImpurity(l *[]int, r *[]int, m *[]int, allocs *
 	return
 }
 
-//UpdateSImpFromAllocs willl be called when splits are being built by moving cases from r to l
-//to avoid recalulatign the entire split impurity.
+// UpdateSImpFromAllocs willl be called when splits are being built by moving cases from r to l
+// to avoid recalulatign the entire split impurity.
 func (target *RegretTarget) UpdateSImpFromAllocs(l *[]int, r *[]int, m *[]int, allocs *BestSplitAllocs, movedRtoL *[]int) (impurityDecrease float64) {
 	var cat, i int
 	lcounter := *allocs.LCounter
@@ -82,8 +82,8 @@ func (target *RegretTarget) UpdateSImpFromAllocs(l *[]int, r *[]int, m *[]int, a
 	return
 }
 
-//FindPredicted does a mode calulation with the count of the positive/constrained
-//class corrected.
+// FindPredicted does a mode calulation with the count of the positive/constrained
+// class corrected.
 func (target *RegretTarget) FindPredicted(cases []int) (pred string) {
 
 	mi := 0
@@ -104,7 +104,7 @@ func (target *RegretTarget) FindPredicted(cases []int) (pred string) {
 
 }
 
-//ImpFromCounts recalculates gini impurity from class counts for us in intertive updates.
+// ImpFromCounts recalculates gini impurity from class counts for us in intertive updates.
 func (target *RegretTarget) ImpFromCounts(t int, counter *[]int) (e float64) {
 
 	mi := 0
@@ -135,7 +135,7 @@ func (target *RegretTarget) ImpFromCounts(t int, counter *[]int) (e float64) {
 
 }
 
-//Impurity implements an impurity based on misslassification costs.
+// Impurity implements an impurity based on misslassification costs.
 func (target *RegretTarget) Impurity(cases *[]int, counter *[]int) (e float64) {
 
 	target.CountPerCat(cases, counter)

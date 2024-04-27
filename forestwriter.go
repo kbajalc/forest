@@ -1,4 +1,4 @@
-package CloudForest
+package learn
 
 import (
 	"fmt"
@@ -22,7 +22,7 @@ func NewForestWriter(w io.Writer) *ForestWriter {
 	return &ForestWriter{w}
 }
 
-//WriteForest writes an entire forest including all headers.
+// WriteForest writes an entire forest including all headers.
 func (fw *ForestWriter) WriteForest(forest *Forest) {
 	if forest.Intercept != 0.0 {
 		fw.WriteForestHeader(0, forest.Target, forest.Intercept)
@@ -32,13 +32,13 @@ func (fw *ForestWriter) WriteForest(forest *Forest) {
 	}
 }
 
-//WriteTree writes an entire Tree including the header.
+// WriteTree writes an entire Tree including the header.
 func (fw *ForestWriter) WriteTree(tree *Tree, ntree int) {
 	fw.WriteTreeHeader(ntree, tree.Target, tree.Weight)
 	fw.WriteNodeAndChildren(tree.Root, "*")
 }
 
-//WrieTreeHeader writes only the header line for a tree.
+// WrieTreeHeader writes only the header line for a tree.
 func (fw *ForestWriter) WriteTreeHeader(ntree int, target string, weight float64) {
 	weightterm := ""
 	if weight >= 0.0 {
@@ -47,7 +47,7 @@ func (fw *ForestWriter) WriteTreeHeader(ntree int, target string, weight float64
 	fmt.Fprintf(fw.w, "TREE=%v,TARGET=\"%v\"%v\n", ntree, target, weightterm)
 }
 
-//WrieTreeHeader writes only the header line for a tree.
+// WrieTreeHeader writes only the header line for a tree.
 func (fw *ForestWriter) WriteForestHeader(nforest int, target string, intercept float64) {
 	interceptterm := ""
 	if intercept != 0.0 {
@@ -56,8 +56,8 @@ func (fw *ForestWriter) WriteForestHeader(nforest int, target string, intercept 
 	fmt.Fprintf(fw.w, "FOREST=%v,TARGET=\"%v\"%v\n", nforest, target, interceptterm)
 }
 
-//WriteNodeAndChildren recursively writes out the target node and all of its children.
-//WriteTree is preferred for most use cases.
+// WriteNodeAndChildren recursively writes out the target node and all of its children.
+// WriteTree is preferred for most use cases.
 func (fw *ForestWriter) WriteNodeAndChildren(n *Node, path string) {
 
 	fw.WriteNode(n, path)
@@ -73,9 +73,9 @@ func (fw *ForestWriter) WriteNodeAndChildren(n *Node, path string) {
 
 }
 
-//WriteNode writes a single node but not it's children. WriteTree will be used more
-//often but WriteNode can be used to grow a large tree directly to disk without
-//storing it in memory.
+// WriteNode writes a single node but not it's children. WriteTree will be used more
+// often but WriteNode can be used to grow a large tree directly to disk without
+// storing it in memory.
 func (fw *ForestWriter) WriteNode(n *Node, path string) {
 	node := fmt.Sprintf("NODE=%v", path)
 	if n.Pred != "" {
@@ -95,7 +95,7 @@ func (fw *ForestWriter) WriteNode(n *Node, path string) {
 	fmt.Fprintln(fw.w, node)
 }
 
-//DescribeMap serializes the "left" map of a categorical splitter.
+// DescribeMap serializes the "left" map of a categorical splitter.
 func (fw *ForestWriter) DescribeMap(input map[string]bool) string {
 	keys := make([]string, 0)
 	for k := range input {

@@ -1,18 +1,16 @@
-package CloudForest
+package learn
 
-import ()
-
-//Recursable defines a function signature for functions that can be called at every
-//down stream node of a tree as Node.Recurse recurses up the tree. The function should
-//have two parameters, the current node and an array of ints specifying the cases that
-//have not been split away.
+// Recursable defines a function signature for functions that can be called at every
+// down stream node of a tree as Node.Recurse recurses up the tree. The function should
+// have two parameters, the current node and an array of ints specifying the cases that
+// have not been split away.
 type Recursable func(*Node, []int, int)
 
 type CodedRecursable func(*Node, *[]int, int, int) (int, interface{}, int)
 
-//A node of a decision tree.
-//Pred is a string containing either the category or a representation of a float
-//(less then ideal)
+// A node of a decision tree.
+// Pred is a string containing either the category or a representation of a float
+// (less then ideal)
 type Node struct {
 	CodedSplit interface{}
 	Featurei   int
@@ -23,7 +21,7 @@ type Node struct {
 	Splitter   *Splitter
 }
 
-//vist each child node with the supplied function
+// vist each child node with the supplied function
 func (n *Node) Climb(c func(*Node)) {
 	c(n)
 	if n.Left != nil {
@@ -37,11 +35,12 @@ func (n *Node) Climb(c func(*Node)) {
 	}
 }
 
-//Recurse is used to apply a Recursable function at every downstream node as the cases
-//specified by case []int are split using the data in fm *Featurematrix. Recursion
-//down a branch stops when a a node with n.Splitter == nil is reached. Recursion down
-//the Missing branch is only used if n.Missing!=nil.
-//For example votes can be tabulated using code like:
+// Recurse is used to apply a Recursable function at every downstream node as the cases
+// specified by case []int are split using the data in fm *Featurematrix. Recursion
+// down a branch stops when a a node with n.Splitter == nil is reached. Recursion down
+// the Missing branch is only used if n.Missing!=nil.
+// For example votes can be tabulated using code like:
+//
 //	t.Root.Recurse(func(n *Node, cases []int) {
 //		if n.Left == nil && n.Right == nil {
 //			// I'm in a leaf node
