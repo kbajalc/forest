@@ -13,16 +13,14 @@ import (
 // http://www.cs.waikato.ac.nz/ml/weka/arff.html
 // The relation is ignored and only catagorical and numerical variables are supported
 func ParseARFF(input io.Reader) *FeatureMatrix {
-
 	reader := bufio.NewReader(input)
 
 	data := make([]Feature, 0, 100)
 	lookup := make(map[string]int, 0)
-	//labels := make([]string, 0, 0)
+	//labels := make([]string, 0)
 
 	i := 0
 	for {
-
 		line, err := reader.ReadString('\n')
 		if err != nil {
 			log.Print("Error:", err)
@@ -39,16 +37,16 @@ func ParseARFF(input io.Reader) *FeatureMatrix {
 
 			if strings.ToLower(vals[2]) == "numeric" || strings.ToLower(vals[2]) == "real" {
 				data = append(data, &DenseNumFeature{
-					make([]float64, 0, 0),
-					make([]bool, 0, 0),
+					make([]float64, 0),
+					make([]bool, 0),
 					vals[1],
 					false})
 			} else {
 				data = append(data, &DenseCatFeature{
 					&CatMap{make(map[string]int, 0),
-						make([]string, 0, 0)},
-					make([]int, 0, 0),
-					make([]bool, 0, 0),
+						make([]string, 0)},
+					make([]int, 0),
+					make([]bool, 0),
 					vals[1],
 					false,
 					false})
@@ -58,10 +56,9 @@ func ParseARFF(input io.Reader) *FeatureMatrix {
 			//labels = append(labels, vals[1])
 			i++
 		}
-
 	}
 
-	fm := &FeatureMatrix{data, lookup, make([]string, 0, 0)}
+	fm := &FeatureMatrix{data, lookup, make([]string, 0)}
 
 	csvdata := csv.NewReader(reader)
 	csvdata.Comment = '%'
@@ -69,7 +66,6 @@ func ParseARFF(input io.Reader) *FeatureMatrix {
 
 	fm.LoadCases(csvdata, false)
 	return fm
-
 }
 
 // WriteArffCases writes the specified cases from the provied feature matrix into an arff file with the given relation string.
@@ -83,9 +79,9 @@ func WriteArffCases(data *FeatureMatrix, cases []int, relation string, outfile i
 
 	for _, f := range data.Data {
 		ftype := "NUMERIC"
-		switch f.(type) {
+		switch t := f.(type) {
 		case (*DenseCatFeature):
-			ftype = fmt.Sprintf("{%v}", strings.Join(f.(*DenseCatFeature).Back, ","))
+			ftype = fmt.Sprintf("{%v}", strings.Join(t.Back, ","))
 		}
 
 		fmt.Fprintf(outfile, "@ATTRIBUTE %v %v\n", f.GetName(), ftype)
@@ -105,14 +101,12 @@ func WriteArffCases(data *FeatureMatrix, cases []int, relation string, outfile i
 				v = f.GetStr(i)
 			}
 			entries = append(entries, v)
-
 		}
 		//fmt.Println(entries)
 		err := oucsv.Write(entries)
 		if err != nil {
 			return err
 		}
-
 	}
 	oucsv.Flush()
 	return nil

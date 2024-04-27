@@ -36,7 +36,7 @@ func (fr *ForestReader) ReadForest() (forest *Forest, err error) {
 		return
 	}
 	if peek[0] != 'F' && peek[0] != 'T' {
-		err = errors.New("Forest Header Not Found.")
+		err = errors.New("Forest Header Not Found")
 		return
 	}
 	for {
@@ -64,7 +64,6 @@ func (fr *ForestReader) ReadForest() (forest *Forest, err error) {
 		if e != nil {
 			return
 		}
-
 	}
 }
 
@@ -118,8 +117,8 @@ func (fr *ForestReader) ReadTree() (tree *Tree, forest *Forest, err error) {
 			}
 
 		case strings.HasPrefix(line, "NODE"):
-			if intree == false {
-				err = errors.New("Poorly formed .sf file. Node found outside of tree.")
+			if !intree {
+				err = errors.New("poorly formed .sf file, node found outside of tree")
 				return
 			}
 			var splitter *Splitter
@@ -152,10 +151,8 @@ func (fr *ForestReader) ReadTree() (tree *Tree, forest *Forest, err error) {
 			}
 
 			tree.AddNode(parsed["NODE"], pred, splitter)
-
 		}
 	}
-
 }
 
 /*
@@ -185,7 +182,6 @@ func (fr *ForestReader) ParseRfAcePredictorLine(line string) map[string]string {
 			clauses = append(clauses, strings.Join(insidequotes, ","))
 			insidequotes = make([]string, 0)
 		}
-
 	}
 	parsed := make(map[string]string, 0)
 	for _, clause := range clauses {

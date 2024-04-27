@@ -12,7 +12,6 @@ type GradBoostTarget struct {
 }
 
 func NewGradBoostTarget(f NumFeature, learnrate float64) (gbc *GradBoostTarget) {
-
 	//res := NumFeature.(*DenseNumFeature).Copy().(*DenseNumFeature)
 	sum := 0.0
 	for i := 0; i < f.Length(); i++ {
@@ -31,7 +30,6 @@ func NewGradBoostTarget(f NumFeature, learnrate float64) (gbc *GradBoostTarget) 
 
 	gbc = &GradBoostTarget{f, learnrate, prior}
 	return
-
 }
 
 func (f *GradBoostTarget) Intercept() float64 {
@@ -44,7 +42,6 @@ func (f *GradBoostTarget) Boost(leaves *[][]int, preds *[]string) (weight float6
 		f.Update(&cases, ParseFloat((*preds)[i]))
 	}
 	return f.LearnRate
-
 }
 
 // Update updates the underlying numeric data by subtracting the mean*weight of the
@@ -66,7 +63,6 @@ func (target *GradBoostTarget) Impurity(cases *[]int, counter *[]int) (e float64
 	}
 	e = -1.0
 	return e
-
 }
 
 func (target *GradBoostTarget) Sum(cases *[]int) (sum float64) {
@@ -87,13 +83,11 @@ func FriedmanScore(allocs *BestSplitAllocs, l, r *[]int) (impurityDecrease float
 	// 	impurityDecrease = 0.0
 	// }
 	return
-
 }
 
 // Friedman MSE slit improvment score from from equation 35 in "Greedy Function Approximation: A Gradiet Boosting Machine"
 // Todo...what should the parent impurity be
 func (target *GradBoostTarget) SplitImpurity(l *[]int, r *[]int, m *[]int, allocs *BestSplitAllocs) (impurityDecrease float64) {
-
 	allocs.Lsum = target.Sum(l)
 	allocs.Rsum = target.Sum(r)
 
@@ -102,7 +96,6 @@ func (target *GradBoostTarget) SplitImpurity(l *[]int, r *[]int, m *[]int, alloc
 }
 
 func (target *GradBoostTarget) UpdateSImpFromAllocs(l *[]int, r *[]int, m *[]int, allocs *BestSplitAllocs, movedRtoL *[]int) (impurityDecrease float64) {
-
 	MVsum := target.Sum(movedRtoL)
 
 	allocs.Lsum += MVsum

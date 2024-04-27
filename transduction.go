@@ -47,7 +47,6 @@ func NewTransTarget(t CatFeature, fm *[]Feature, unlabeled string, alpha, beta f
 	}
 
 	return &TransTarget{t, fm, t.CatToNum(unlabeled), alpha, beta, ncases, maxcats}
-
 }
 
 /*
@@ -109,12 +108,11 @@ func (target *TransTarget) Density(cases *[]int, counter *[]int) (e float64) {
 	//e = float64(t*t) / float64(target.N*target.N)
 	e = 1 / float64(t*t) // float64(target.N*target.N)
 	span := 0.0
-	bigenoughcounter := make([]int, target.MaxCats, target.MaxCats)
+	bigenoughcounter := make([]int, target.MaxCats)
 	targetname := target.GetName()
 
 	for _, f := range *target.Features {
 		if f.GetName() != targetname {
-
 			span = f.Span(cases, &bigenoughcounter)
 
 			if span > 0.0 {
@@ -125,7 +123,6 @@ func (target *TransTarget) Density(cases *[]int, counter *[]int) (e float64) {
 			for i := 0; i < ncats; i++ {
 				bigenoughcounter[i] = 0
 			}
-
 		}
 	}
 
@@ -138,7 +135,6 @@ func (target *TransTarget) Density(cases *[]int, counter *[]int) (e float64) {
 func (target *TransTarget) FindPredicted(cases []int) string {
 	counts := make([]int, target.NCats())
 	for _, i := range cases {
-
 		counts[target.Geti(i)] += 1
 
 	}

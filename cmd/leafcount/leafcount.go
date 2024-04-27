@@ -53,7 +53,6 @@ func main() {
 	}()
 
 	for i := 0; i < threads; i++ {
-
 		go func() {
 			for {
 				fn := <-fileChan
@@ -76,7 +75,6 @@ func main() {
 					for _, leaf := range leaves {
 						for j := 0; j < len(leaf.Cases); j++ {
 							for k := 0; k < len(leaf.Cases); k++ {
-
 								counts.Add(leaf.Cases[j], leaf.Cases[k], 1)
 
 							}

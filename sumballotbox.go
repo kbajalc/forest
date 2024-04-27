@@ -42,7 +42,6 @@ func NewSumBallotBox(size int) *SumBallotBox {
 func (bb *SumBallotBox) Vote(casei int, pred string, weight float64) {
 	v, err := strconv.ParseFloat(pred, 64)
 	if err == nil {
-
 		bb.Box[casei].Mutex.Lock()
 		bb.Box[casei].Sum += v * weight
 		bb.Box[casei].Mutex.Unlock()
@@ -57,7 +56,6 @@ func (bb *SumBallotBox) Tally(i int) (predicted string) {
 	predicted = fmt.Sprintf("%v", bb.TallyNum(i))
 
 	return
-
 }
 
 func (bb *SumBallotBox) TallyNum(i int) (predicted float64) {
@@ -66,14 +64,11 @@ func (bb *SumBallotBox) TallyNum(i int) (predicted float64) {
 	bb.Box[i].Mutex.Unlock()
 
 	return
-
 }
 
 /*
 TallyError is non functional here.
 */
 func (bb *SumBallotBox) TallyError(feature Feature) (e float64) {
-
 	return 1.0
-
 }

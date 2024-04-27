@@ -40,7 +40,6 @@ func (s *BalancedSampler) Sample(samples *[]int, n int) {
 		c = rand.Intn(nCases)
 		(*samples) = append((*samples), s.Cases[c][rand.Intn(len(s.Cases[c]))])
 	}
-
 }
 
 // SecondaryBalancedSampler roughly balances the target feature within the classes of another catagorical
@@ -54,14 +53,13 @@ type SecondaryBalancedSampler struct {
 // NewSecondaryBalancedSampler returns an initalized balanced sampler.
 func NewSecondaryBalancedSampler(target *DenseCatFeature, balanceby *DenseCatFeature) (s *SecondaryBalancedSampler) {
 	nSecondaryCats := balanceby.NCats()
-	s = &SecondaryBalancedSampler{0, make([]int, nSecondaryCats, nSecondaryCats), make([][][]int, 0, nSecondaryCats)}
+	s = &SecondaryBalancedSampler{0, make([]int, nSecondaryCats), make([][][]int, 0, nSecondaryCats)}
 
 	for i := 0; i < nSecondaryCats; i++ {
 		s.Samplers = append(s.Samplers, make([][]int, 0, target.NCats()))
 		for j := 0; j < target.NCats(); j++ {
 			s.Samplers[i] = append(s.Samplers[i], make([]int, 0, target.Length()))
 		}
-
 	}
 
 	for i := 0; i < target.Length(); i++ {
@@ -74,7 +72,6 @@ func NewSecondaryBalancedSampler(target *DenseCatFeature, balanceby *DenseCatFea
 		}
 	}
 	return
-
 }
 
 func (s *SecondaryBalancedSampler) Sample(samples *[]int, n int) {
@@ -95,7 +92,6 @@ func (s *SecondaryBalancedSampler) Sample(samples *[]int, n int) {
 		c = rand.Intn(nCases)
 		(*samples) = append((*samples), s.Samplers[b][c][rand.Intn(len(s.Samplers[b][c]))])
 	}
-
 }
 
 /*
@@ -113,7 +109,6 @@ func SampleFirstN(deck *[]int, samples *[]int, n int, nconstants int) {
 	nDrawnConstants := 0
 	nnonconstant := length - nconstants
 	for i := 0; i < n && i < nnonconstant; i++ {
-
 		randi = lastSample + rand.Intn(length-nDrawnConstants-lastSample)
 		//randi = lastSample + rand.Intn(nnonconstant-lastSample)
 		if randi >= nnonconstant {
@@ -129,7 +124,6 @@ func SampleFirstN(deck *[]int, samples *[]int, n int, nconstants int) {
 	if samples != nil {
 		(*samples) = cards[:lastSample]
 	}
-
 }
 
 /*

@@ -19,7 +19,7 @@ type CatMap struct {
 // it doesn't.
 func (cm *CatMap) CatToNum(value string) (numericv int) {
 	numericv, exsists := cm.Map[value]
-	if exsists == false {
+	if !exsists {
 		numericv = len(cm.Back)
 		cm.Map[value] = numericv
 		cm.Back = append(cm.Back, value)

@@ -29,7 +29,6 @@ func (bb *NumBallotBox) Vote(casei int, pred string, weight float64) {
 	if err == nil {
 		bb.box[casei].WeightedAdd(v, weight)
 	}
-
 }
 
 // TallyNumerical tallies the votes for the case specified by i as
@@ -78,7 +77,6 @@ func (bb *NumBallotBox) TallySquaredError(feature Feature) (e float64) {
 	e = e / float64(c)
 
 	return
-
 }
 
 // TallyScore returns the squared error (unexplained variance) divided by the data variance.
@@ -107,14 +105,11 @@ func (bb *NumBallotBox) TallyError(feature Feature) (e float64) {
 	e = bb.TallySquaredError(feature) / r2
 
 	return
-
 }
 
 // Tally score returns the R2 score or coefichent of determination.
 func (bb *NumBallotBox) TallyR2Score(feature Feature) (e float64) {
-
 	e = 1 - bb.TallyError(feature)
 
 	return
-
 }

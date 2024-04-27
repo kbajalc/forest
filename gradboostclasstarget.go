@@ -33,7 +33,6 @@ type GradBoostClassTarget struct {
 }
 
 func NewGradBoostClassTarget(f CatFeature, learnrate float64, pos_class string) (gbc *GradBoostClassTarget) {
-
 	//fmt.Println("Back: ", f.CatToNum(pos_class), f.(*DenseCatFeature).Back)
 
 	actual := f.EncodeToNum()[0].(*DenseNumFeature)
@@ -45,7 +44,6 @@ func NewGradBoostClassTarget(f CatFeature, learnrate float64, pos_class string) 
 		} else {
 			actual.Put(i, 0.0)
 		}
-
 	}
 
 	res := &GradBoostTarget{actual.Copy().(*DenseNumFeature), learnrate, 0.0}
@@ -68,7 +66,6 @@ func NewGradBoostClassTarget(f CatFeature, learnrate float64, pos_class string) 
 
 	gbc = &GradBoostClassTarget{res, actual, pred, learnrate, prior, pos_class}
 	return
-
 }
 
 func (f *GradBoostClassTarget) Intercept() float64 {
@@ -81,7 +78,6 @@ func (f *GradBoostClassTarget) Boost(leaves *[][]int, preds *[]string) (weight f
 		f.Update(&cases, ParseFloat((*preds)[i]))
 	}
 	return f.LearnRate
-
 }
 
 func (f *GradBoostClassTarget) Predicted(cases *[]int) float64 {
@@ -103,7 +99,6 @@ func (f *GradBoostClassTarget) Predicted(cases *[]int) float64 {
 func (f *GradBoostClassTarget) FindPredicted(cases []int) (pred string) {
 	pred = fmt.Sprintf("%v", f.Predicted(&cases))
 	return
-
 }
 
 // Update updates the underlying numeric data by subtracting the mean*weight of the
@@ -115,6 +110,5 @@ func (f *GradBoostClassTarget) Update(cases *[]int, predicted float64) {
 
 		g := f.Actual.Get(i) - Expit(pred)
 		f.Put(i, g)
-
 	}
 }

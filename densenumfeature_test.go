@@ -3,12 +3,11 @@ package learn
 import "testing"
 
 func TestNumFeature(t *testing.T) {
-
 	name := "numfeature"
 
 	f := &DenseNumFeature{
-		make([]float64, 0, 0),
-		make([]bool, 0, 0),
+		make([]float64, 0),
+		make([]bool, 0),
 		name,
 		false}
 
@@ -114,7 +113,6 @@ func TestNumFeature(t *testing.T) {
 		if f.NumData[cases[i]] < f.NumData[cases[i-1]] {
 			sorted = false
 		}
-
 	}
 	if !sorted {
 		t.Error("Numerical feature didn't sort cases.")
@@ -128,5 +126,4 @@ func TestNumFeature(t *testing.T) {
 	if len(l) != 5 || len(r) != 3 || len(m) != 0 {
 		t.Errorf("After Coded Numerical Split between equal runs Left, Right, Missing Lengths = %v %v %v not 5 3 0", len(l), len(r), len(m))
 	}
-
 }

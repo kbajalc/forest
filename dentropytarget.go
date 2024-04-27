@@ -80,7 +80,6 @@ func (target *DEntropyTarget) ImpFromCounts(total int, counts *[]int) (e float64
 		}
 	}
 	return
-
 }
 
 func (target *DEntropyTarget) FindPredicted(cases []int) (pred string) {
@@ -97,17 +96,14 @@ func (target *DEntropyTarget) FindPredicted(cases []int) (pred string) {
 				count += cost
 			}
 			total += cost
-
 		}
 		prob_true = count / total
-
 	} else {
 		count := 0
 		for _, i := range cases {
 			if target.Geti(i) == t {
 				count++
 			}
-
 		}
 		prob_true = float64(count) / float64(len(cases))
 	}
@@ -117,7 +113,6 @@ func (target *DEntropyTarget) FindPredicted(cases []int) (pred string) {
 // DEntropyTarget.Impurity implements categorical entropy as sum(pj*log2(pj)) where pj
 // is the number of cases with the j'th category over the total number of cases.
 func (target *DEntropyTarget) Impurity(cases *[]int, counts *[]int) (e float64) {
-
 	total := len(*cases)
 	target.CountPerCat(cases, counts)
 
@@ -127,9 +122,7 @@ func (target *DEntropyTarget) Impurity(cases *[]int, counts *[]int) (e float64) 
 			p = float64(i) / float64(total)
 			e -= p * math.Log(p)
 		}
-
 	}
 
 	return
-
 }

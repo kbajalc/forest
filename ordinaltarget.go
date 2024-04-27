@@ -67,7 +67,6 @@ func (f *OrdinalTarget) Mode(cases *[]int) (m float64) {
 		if !f.IsMissing(i) {
 			counts[int(f.Get(i))] += 1
 		}
-
 	}
 	max := 0
 	for k, v := range counts {
@@ -77,7 +76,6 @@ func (f *OrdinalTarget) Mode(cases *[]int) (m float64) {
 		}
 	}
 	return
-
 }
 
 // OrdinalTarget.Impurity is an ordinal version of impurity using Mode instead of Mean for prediction.
@@ -85,7 +83,6 @@ func (target *OrdinalTarget) Impurity(cases *[]int, counter *[]int) (e float64) 
 	m := target.Predicted(cases)
 	e = target.Error(cases, m)
 	return
-
 }
 
 func (target *OrdinalTarget) FindPredicted(cases []int) (pred string) {

@@ -14,11 +14,15 @@
             "cwd": "${workspaceRoot}",
             "args": [
                 "-train", "./data/iris.data.fm",
-                "-save", "./work/iris.tree.sf",
+                "-save", "./work/forest/iris.model.sf",
                 "-target", "C:Class",
                 "-trees", "100",
+                "-oob",
+                "-cpuprofile", "./work/forest/iris.prof",
+                "-importance", "./work/forest/iris.importance",
+                "-oobpreds", "./work/forest/iris.oob",
                 "-selftest",
-                // "-nCores", "16"
+                // "-cores", "16"
             ]
         }
     ]

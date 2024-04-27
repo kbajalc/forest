@@ -28,7 +28,7 @@ type CatBallotBox struct {
 func NewCatBallotBox(size int) *CatBallotBox {
 	bb := CatBallotBox{
 		&CatMap{make(map[string]int),
-			make([]string, 0, 0)},
+			make([]string, 0)},
 		make([]*CatBallot, 0, size)}
 	for i := 0; i < size; i++ {
 		bb.Box = append(bb.Box, NewCatBallot())
@@ -59,9 +59,7 @@ func (bb *CatBallotBox) Tally(i int) (predicted string) {
 		if v > votes {
 			predictedn = k
 			votes = v
-
 		}
-
 	}
 	bb.Box[i].Mutex.Unlock()
 	if votes > 0 {
@@ -71,7 +69,6 @@ func (bb *CatBallotBox) Tally(i int) (predicted string) {
 	}
 
 	return
-
 }
 
 /*
@@ -102,7 +99,6 @@ func (bb *CatBallotBox) TallyError(feature Feature) (e float64) {
 			if catfeature.NumToCat(value) == predicted {
 				correct[value]++
 			}
-
 		}
 	}
 
@@ -114,5 +110,4 @@ func (bb *CatBallotBox) TallyError(feature Feature) (e float64) {
 	e = 1.0 - e
 
 	return
-
 }

@@ -42,7 +42,6 @@ func GetAllClassificationTargets(f CatFeature) []Target {
 		//NewHDistanceTarget(f),
 		//regret,
 	}
-
 }
 
 func GetAllRegressionTargets(f NumFeature) []Target {
@@ -64,7 +63,6 @@ func TestWierdTargets(t *testing.T) {
 	fm2 := ParseAFM(strings.NewReader(fmissing))
 
 	for _, fm := range []*FeatureMatrix{fm1, fm2} {
-
 		cases := []int{0, 1, 2, 3, 4, 5, 6, 7}
 		canidates := []int{2, 3, 4}
 
@@ -196,7 +194,6 @@ func TestTreeTargets(t *testing.T) {
 			if count != 9 {
 				t.Errorf("Classification tree grown with %T has  has %v nodes not 9", target, count)
 			}
-
 		}
 
 		catvotes := NewCatBallotBox(cattarget.Length())
@@ -208,7 +205,6 @@ func TestTreeTargets(t *testing.T) {
 			t.Errorf("Sinlge tree clasification on simple case using %T had nonzero error: %v", target, err)
 		}
 	}
-
 }
 
 func TestMissing(t *testing.T) {
@@ -266,7 +262,6 @@ func TestMissing(t *testing.T) {
 		if err != 0.0 {
 			t.Errorf("Error: Single tree regression with imputed missing %T had nonzero  error: %v", target, err)
 		}
-
 	}
 
 	//clasification
@@ -314,9 +309,7 @@ func TestMissing(t *testing.T) {
 		if err > 0.0 {
 			t.Errorf("Error: Sinlge tree clasification on simple case with imputed missing %T had nonzero error: %v", target, err)
 		}
-
 	}
-
 }
 
 // Test classification target typs on iris data set. Also test arff loading.
@@ -333,8 +326,8 @@ func TestIris(t *testing.T) {
 	fm := ParseLibSVM(irisreader)
 	targeti := 0
 
-	if len(fm.CaseLabels) != 150 || fm.Data[0].Length() != 150 {
-		t.Errorf("Iris feature matrix has %v case labels, %v values not 150", len(fm.CaseLabels), fm.Data[0].Length())
+	if len(fm.Cases) != 150 || fm.Data[0].Length() != 150 {
+		t.Errorf("Iris feature matrix has %v case labels, %v values not 150", len(fm.Cases), fm.Data[0].Length())
 	}
 	if len(fm.Data) != 5 {
 		t.Errorf("Iris feature matrix has %v features not 5", len(fm.Data))
@@ -425,7 +418,6 @@ func TestIris(t *testing.T) {
 		t.Logf("Log: 10 tree classification of iris with .05 missing using %T had error: %v took: %v", target, err, trainingEnd.Sub(trainingStart))
 
 	}
-
 }
 
 // Test classification target typs on iris data set. Also test arff loading.
@@ -449,7 +441,6 @@ func TestTwoClassIris(t *testing.T) {
 		if cattarget.Geti(i) == 2 {
 			cattarget.Puti(i, 0)
 		}
-
 	}
 	pos_class := cattarget.NumToCat(1)
 	classtargets := []Target{
@@ -465,7 +456,7 @@ func TestTwoClassIris(t *testing.T) {
 
 		err := 0.0
 		numtarget := cattarget.EncodeToNum()[1].(NumFeature)
-		switch target.(type) {
+		switch tt := target.(type) {
 		case *GradBoostClassTarget:
 			catvotes := NewSumBallotBox(cattarget.Length())
 
@@ -473,7 +464,7 @@ func TestTwoClassIris(t *testing.T) {
 				tree.Vote(fm, catvotes)
 			}
 			for i := 0; i < cattarget.Length(); i++ {
-				pred := Expit(catvotes.TallyNum(i) + target.(*GradBoostClassTarget).Prior)
+				pred := Expit(catvotes.TallyNum(i) + tt.Prior)
 				actual := numtarget.Get(i)
 
 				//fmt.Println(pred, actual)
@@ -513,7 +504,6 @@ func TestTwoClassIris(t *testing.T) {
 			}
 		}
 	}
-
 }
 
 // Test classification target typs on iris data set. Also test arff loading.
@@ -529,8 +519,8 @@ func TestBoston(t *testing.T) {
 		t.Errorf("Boston feature matrix has %v features not 14", len(fm.Data))
 	}
 
-	if len(fm.CaseLabels) != 506 || fm.Data[0].Length() != 506 {
-		t.Errorf("Boston feature matrix has %v case labels, %v values not 506", len(fm.CaseLabels), fm.Data[0].Length())
+	if len(fm.Cases) != 506 || fm.Data[0].Length() != 506 {
+		t.Errorf("Boston feature matrix has %v case labels, %v values not 506", len(fm.Cases), fm.Data[0].Length())
 	}
 
 	candidates := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}
@@ -582,7 +572,6 @@ func TestBoston(t *testing.T) {
 		}
 		t.Logf("Log: Regression of boston housing prices with .01 missing with %T had R2 score: %v took: %v", target, err, trainingEnd.Sub(trainingStart))
 	}
-
 }
 
 var irislibsvm = `1 1:-0.555556 2:0.25 3:-0.864407 4:-0.916667 

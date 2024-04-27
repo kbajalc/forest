@@ -22,7 +22,7 @@ func TestImportance(t *testing.T) {
 
 	targeti := fm.Map["class"]
 
-	candidates := make([]int, 0, 0)
+	candidates := make([]int, 0)
 
 	for i := 0; i < len(fm.Data); i++ {
 		if i != targeti {
@@ -40,7 +40,7 @@ func TestImportance(t *testing.T) {
 
 	//standard
 	imppnt := NewRunningMeans(len(fm.Data))
-	_ = GrowRandomForest(fm, numtarget.(Feature), candidates, fm.Data[0].Length(), 6, nTrees, 1, 0, false, false, false, false, imppnt)
+	_ = GrowRandomForest(fm, numtarget, candidates, fm.Data[0].Length(), 6, nTrees, 1, 0, false, false, false, false, imppnt)
 	//TODO read importance scores and verify RM and LSTAT come out on top
 
 	roomimp := imp((*imppnt)[fm.Map["RM"]].Read())
@@ -63,7 +63,7 @@ func TestImportance(t *testing.T) {
 
 	//vetting
 	imppnt = NewRunningMeans(len(fm.Data))
-	_ = GrowRandomForest(fm, numtarget.(Feature), candidates, fm.Data[0].Length(), 6, nTrees, 1, 0, false, false, true, false, imppnt)
+	_ = GrowRandomForest(fm, numtarget, candidates, fm.Data[0].Length(), 6, nTrees, 1, 0, false, false, true, false, imppnt)
 	//TODO read importance scores and verify RM and LSTAT come out on top
 
 	roomimp = imp((*imppnt)[fm.Map["RM"]].Read())
@@ -87,7 +87,7 @@ func TestImportance(t *testing.T) {
 	//evaloob
 	//vetting
 	imppnt = NewRunningMeans(len(fm.Data))
-	_ = GrowRandomForest(fm, numtarget.(Feature), candidates, fm.Data[0].Length(), 6, nTrees, 1, 0, false, false, false, true, imppnt)
+	_ = GrowRandomForest(fm, numtarget, candidates, fm.Data[0].Length(), 6, nTrees, 1, 0, false, false, false, true, imppnt)
 	//TODO read importance scores and verify RM and LSTAT come out on top
 
 	roomimp = imp((*imppnt)[fm.Map["RM"]].Read())
@@ -107,5 +107,4 @@ func TestImportance(t *testing.T) {
 	if beatroom > 1 || beatlstat > 1 {
 		t.Error("RM and LSTAT features  not most important in boston data set regression with eval oob.")
 	}
-
 }

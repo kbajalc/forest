@@ -38,14 +38,12 @@ func (s *Splitter) Split(fm *FeatureMatrix, cases []int) (l []int, r []int, m []
 		if f.GoesLeft(cases[i], s) {
 			lastleft++
 			if i != lastleft {
-
 				swaper = cases[i]
 				cases[i] = cases[lastleft]
 				cases[lastleft] = swaper
 				i--
 
 			}
-
 		} else {
 			//Right
 			lastright--
@@ -53,9 +51,7 @@ func (s *Splitter) Split(fm *FeatureMatrix, cases []int) (l []int, r []int, m []
 			cases[i] = cases[lastright]
 			cases[lastright] = swaper
 			i--
-
 		}
-
 	}
 	//fmt.Println(cases, lastleft, lastright)
 	l = cases[:lastleft+1]

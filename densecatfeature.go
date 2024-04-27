@@ -3,6 +3,7 @@ package learn
 import (
 	"math/big"
 	"math/rand"
+	"strconv"
 	"strings"
 )
 
@@ -32,7 +33,7 @@ func (f *DenseCatFeature) EncodeToNum() (fs []Feature) {
 	l := f.Length()
 	if f.NCats() <= 2 {
 		fn := &DenseNumFeature{
-			make([]float64, l, l),
+			make([]float64, l),
 			f.Missing,
 			f.Name,
 			f.HasMissing}
@@ -44,7 +45,7 @@ func (f *DenseCatFeature) EncodeToNum() (fs []Feature) {
 		fs = make([]Feature, 0, f.NCats())
 		for j, sv := range f.Back {
 			fn := &DenseNumFeature{
-				make([]float64, l, l),
+				make([]float64, l),
 				f.Missing,
 				f.Name + "==" + sv,
 				f.HasMissing}
@@ -67,7 +68,7 @@ func (f *DenseCatFeature) OneHot() (fs []Feature) {
 			fn := &DenseCatFeature{
 				&CatMap{map[string]int{"false": 0, "true": 1},
 					[]string{"false", "true"}},
-				make([]int, l, l),
+				make([]int, l),
 				f.Missing,
 				f.Name + "==" + sv,
 				f.RandomSearch,
@@ -89,11 +90,25 @@ func (f *DenseCatFeature) OneHot() (fs []Feature) {
 func (f *DenseCatFeature) Append(v string) {
 	norm := strings.ToLower(v)
 	if len(norm) == 0 || norm == "?" || norm == "nan" || norm == "na" || norm == "null" {
-
 		f.CatData = append(f.CatData, 0)
 		f.Missing = append(f.Missing, true)
 		f.HasMissing = true
 		return
+	}
+	f.CatData = append(f.CatData, f.CatToNum(v))
+	f.Missing = append(f.Missing, false)
+}
+
+func (f *DenseCatFeature) PushInt(n int) {
+	v := strconv.Itoa(n)
+	f.CatData = append(f.CatData, f.CatToNum(v))
+	f.Missing = append(f.Missing, false)
+}
+
+func (f *DenseCatFeature) PushBool(b bool) {
+	v := "false"
+	if b {
+		v = "true"
 	}
 	f.CatData = append(f.CatData, f.CatToNum(v))
 	f.Missing = append(f.Missing, false)
@@ -174,7 +189,6 @@ func (f *DenseCatFeature) BestSplit(target Target,
 	leafSize int,
 	randomSplit bool,
 	allocs *BestSplitAllocs) (codedSplit interface{}, impurityDecrease float64, constant bool) {
-
 	var nmissing, nonmissing, total int
 	var nonmissingparentImp, missingimp float64
 	var tosplit *[]int
@@ -209,9 +223,9 @@ func (f *DenseCatFeature) BestSplit(target Target,
 
 	//TODO: reverse this list, common cases first and maybe make it a switch statement
 	nCats := f.NCats()
-	if f.RandomSearch == false && nCats > maxNonBigCats {
+	if !f.RandomSearch && nCats > maxNonBigCats {
 		codedSplit, impurityDecrease, constant = f.BestCatSplitIterBig(target, tosplit, nonmissingparentImp, leafSize, allocs)
-	} else if f.RandomSearch == false && nCats > maxExhaustiveCats {
+	} else if !f.RandomSearch && nCats > maxExhaustiveCats {
 		codedSplit, impurityDecrease, constant = f.BestCatSplitIter(target, tosplit, nonmissingparentImp, leafSize, allocs)
 	} else if nCats > maxNonBigCats {
 		codedSplit, impurityDecrease, constant = f.BestCatSplitBig(target, tosplit, nonmissingparentImp, maxNonRandomExahustive, leafSize, allocs)
@@ -225,7 +239,6 @@ func (f *DenseCatFeature) BestSplit(target Target,
 		impurityDecrease = parentImp + ((float64(nonmissing)*(impurityDecrease-nonmissingparentImp) - float64(nmissing)*missingimp) / float64(total))
 	}
 	return
-
 }
 
 // Split does an inplace split from a coded spli value which should be an int or Big.Int with bit flags
@@ -239,9 +252,9 @@ func (f *DenseCatFeature) Split(codedSplit interface{}, cases []int) (l []int, r
 
 	var GoesLeft func(int) bool
 
-	switch codedSplit.(type) {
+	switch t := codedSplit.(type) {
 	case int:
-		cat := codedSplit.(int)
+		cat := t
 		// doesn't account for non slitting case cat = 3
 		// or left vs right simitry which makes tests fail
 		// if f.NCats() == 2 {
@@ -250,15 +263,14 @@ func (f *DenseCatFeature) Split(codedSplit interface{}, cases []int) (l []int, r
 		// 	}
 		// } else {
 		GoesLeft = func(i int) bool {
-			return 0 != (cat & (1 << uint(f.CatData[i])))
+			return (cat & (1 << uint(f.CatData[i]))) != 0
 		}
 		// }
 	case *big.Int:
-		bigCat := codedSplit.(*big.Int)
+		bigCat := t
 		GoesLeft = func(i int) bool {
-			return 0 != bigCat.Bit(f.CatData[i])
+			return bigCat.Bit(f.CatData[i]) != 0
 		}
-
 	}
 
 	//Move left cases to the start and right cases to the end so that missing cases end up
@@ -271,7 +283,6 @@ func (f *DenseCatFeature) Split(codedSplit interface{}, cases []int) (l []int, r
 		if GoesLeft(cases[i]) { //Left
 			lastleft++
 			if i != lastleft {
-
 				swaper = cases[i]
 				cases[i] = cases[lastleft]
 				cases[lastleft] = swaper
@@ -305,9 +316,9 @@ func (f *DenseCatFeature) SplitPoints(codedSplit interface{}, cs *[]int) (int, i
 
 	var GoesLeft func(int) bool
 
-	switch codedSplit.(type) {
+	switch t := codedSplit.(type) {
 	case int:
-		cat := codedSplit.(int)
+		cat := t
 		// doesn't account for non slitting case cat = 3
 		// or left vs right simitry which makes tests fail
 		// if f.NCats() == 2 {
@@ -316,15 +327,14 @@ func (f *DenseCatFeature) SplitPoints(codedSplit interface{}, cs *[]int) (int, i
 		// 	}
 		// } else {
 		GoesLeft = func(i int) bool {
-			return 0 != (cat & (1 << uint(f.CatData[i])))
+			return (cat & (1 << uint(f.CatData[i]))) != 0
 		}
 		// }
 	case *big.Int:
-		bigCat := codedSplit.(*big.Int)
+		bigCat := t
 		GoesLeft = func(i int) bool {
-			return 0 != bigCat.Bit(f.CatData[i])
+			return bigCat.Bit(f.CatData[i]) != 0
 		}
-
 	}
 
 	//Move left cases to the start and right cases to the end so that missing cases end up
@@ -338,7 +348,6 @@ func (f *DenseCatFeature) SplitPoints(codedSplit interface{}, cs *[]int) (int, i
 		if GoesLeft(swaper) { //Left
 			lastleft++
 			if i != lastleft {
-
 				//swaper = cases[i]
 				cases[i] = cases[lastleft]
 				cases[lastleft] = swaper
@@ -361,28 +370,24 @@ func (f *DenseCatFeature) SplitPoints(codedSplit interface{}, cs *[]int) (int, i
 // BestCatSplit. Numeric splitters are decoded to send values <= num left. Categorical
 // splitters are decoded to send categorical values for which the bit in cat is 1 left.
 func (f *DenseCatFeature) DecodeSplit(codedSplit interface{}) (s *Splitter) {
-
 	nCats := f.NCats()
 	s = &Splitter{f.Name, false, 0.0, make(map[string]bool, nCats)}
 
-	switch codedSplit.(type) {
+	switch t := codedSplit.(type) {
 	case int:
-		cat := codedSplit.(int)
+		cat := t
 		for j := 0; j < nCats; j++ {
-
-			if 0 != (cat & (1 << uint(j))) {
+			if (cat & (1 << uint(j))) != 0 {
 				s.Left[f.Back[j]] = true
 			}
-
 		}
 	case *big.Int:
-		bigCat := codedSplit.(*big.Int)
+		bigCat := t
 		for j := 0; j < nCats; j++ {
-			if 0 != bigCat.Bit(j) {
+			if bigCat.Bit(j) != 0 {
 				s.Left[f.Back[j]] = true
 			}
 		}
-
 	}
 
 	return
@@ -404,7 +409,6 @@ allocs contains pointers to reusable structures for use while searching for the 
 be initialized to the proper size with NewBestSplitAlocs.
 */
 func (f *DenseCatFeature) BestCatSplitIterBig(target Target, cases *[]int, parentImp float64, leafSize int, allocs *BestSplitAllocs) (bestSplit *big.Int, impurityDecrease float64, constant bool) {
-
 	left := *allocs.Left
 	right := *allocs.Right
 	/*
@@ -429,12 +433,10 @@ func (f *DenseCatFeature) BestCatSplitIterBig(target Target, cases *[]int, paren
 	//iteratively build a combination of categories until they
 	//stop getting better
 	for j := 0; j < nCats; j++ {
-
 		innerImp = impurityDecrease
 		innerSplit.SetInt64(0)
 		//find the best additional category
 		for i := 0; i < nCats; i++ {
-
 			if bestSplit.Bit(i) != 0 {
 				continue
 			}
@@ -445,9 +447,8 @@ func (f *DenseCatFeature) BestCatSplitIterBig(target Target, cases *[]int, paren
 			nextSplit.SetBit(bestSplit, i, 1)
 
 			for _, c := range *cases {
-
 				cat = f.CatData[c]
-				if 0 != nextSplit.Bit(cat) {
+				if nextSplit.Bit(cat) != 0 {
 					left = append(left, c)
 				} else {
 					right = append(right, c)
@@ -470,18 +471,14 @@ func (f *DenseCatFeature) BestCatSplitIterBig(target Target, cases *[]int, paren
 			if nextImp > innerImp {
 				innerSplit.Set(nextSplit)
 				innerImp = nextImp
-
 			}
-
 		}
 		if innerImp > impurityDecrease {
 			bestSplit.Set(innerSplit)
 			impurityDecrease = innerImp
-
 		} else {
 			break
 		}
-
 	}
 
 	return
@@ -503,7 +500,6 @@ allocs contains pointers to reusable structures for use while searching for the 
 be initialized to the proper size with NewBestSplitAlocs.
 */
 func (f *DenseCatFeature) BestCatSplitIter(target Target, cases *[]int, parentImp float64, leafSize int, allocs *BestSplitAllocs) (bestSplit int, impurityDecrease float64, constant bool) {
-
 	left := *allocs.Left
 	right := *allocs.Right
 	/*
@@ -528,13 +524,11 @@ func (f *DenseCatFeature) BestCatSplitIter(target Target, cases *[]int, parentIm
 	//iteratively build a combination of categories until they
 	//stop getting better
 	for j := 0; j < nCats; j++ {
-
 		innerImp = impurityDecrease
 		innerSplit = 0
 		//find the best additional category
 		for i := 0; i < nCats; i++ {
-
-			if 0 != (bestSplit & (1 << uint(i))) {
+			if (bestSplit & (1 << uint(i))) != 0 {
 				continue
 			}
 
@@ -544,9 +538,8 @@ func (f *DenseCatFeature) BestCatSplitIter(target Target, cases *[]int, parentIm
 			nextSplit = bestSplit | 1<<uint(i)
 
 			for _, c := range *cases {
-
 				cat = f.CatData[c]
-				if 0 != (nextSplit & (1 << uint(cat))) {
+				if (nextSplit & (1 << uint(cat))) != 0 {
 					left = append(left, c)
 				} else {
 					right = append(right, c)
@@ -562,7 +555,6 @@ func (f *DenseCatFeature) BestCatSplitIter(target Target, cases *[]int, parentIm
 			if parentImp < 0 {
 				nextImp = target.SplitImpurity(&left, &right, nil, allocs)
 			} else {
-
 				nextImp = parentImp
 				nextImp -= target.SplitImpurity(&left, &right, nil, allocs)
 			}
@@ -570,20 +562,15 @@ func (f *DenseCatFeature) BestCatSplitIter(target Target, cases *[]int, parentIm
 			if nextImp > innerImp {
 				innerSplit = nextSplit
 				innerImp = nextImp
-
 			}
-
 		}
 		if innerImp > impurityDecrease {
 			bestSplit = innerSplit
 			impurityDecrease = innerImp
-
 		} else {
 			break
 		}
-
 	}
-
 	return
 }
 
@@ -614,7 +601,6 @@ func (f *DenseCatFeature) BestCatSplit(target Target,
 	maxEx int,
 	leafSize int,
 	allocs *BestSplitAllocs) (bestSplit int, impurityDecrease float64, constant bool) {
-
 	impurityDecrease = minImp
 
 	cs := *cases
@@ -656,7 +642,6 @@ func (f *DenseCatFeature) BestCatSplit(target Target,
 	//start at 1 to ignore the set with all on one side
 
 	for i := 1; i < nPartitions; i++ {
-
 		bits = i
 		if !useExhaustive {
 			//generate random partition
@@ -672,7 +657,7 @@ func (f *DenseCatFeature) BestCatSplit(target Target,
 
 		// 	// j = 1
 		// 	// j <<= uint(catdata[c])
-		// 	if 0 != (bits & cached[i]) {
+		// 	if (bits & cached[i]) != 0 {
 		// 		(*Left) = append((*Left), c)
 		// 	} else {
 		// 		(*Right) = append((*Right), c)
@@ -695,11 +680,10 @@ func (f *DenseCatFeature) BestCatSplit(target Target,
 		//for range here passes tests but doesn't have good accuracy on larger forest coverage dataset
 		for j := 0; j < r; j++ {
 			//swaper = cs[j]
-			if 0 != (bits & cached[j]) { //Left
+			if (bits & cached[j]) != 0 { //Left
 				l++
 				//Never used for two way split
 				// if j != l {
-
 				// 	swaper = cs[j]
 				// 	cs[j] = cs[l]
 				// 	cs[l] = swaper
@@ -734,7 +718,6 @@ func (f *DenseCatFeature) BestCatSplit(target Target,
 		if parentImp < 0 {
 			innerimp = target.SplitImpurity(&allocs.LM, &allocs.RM, nil, allocs)
 		} else {
-
 			innerimp = parentImp
 			innerimp -= target.SplitImpurity(&allocs.LM, &allocs.RM, nil, allocs)
 		}
@@ -742,11 +725,8 @@ func (f *DenseCatFeature) BestCatSplit(target Target,
 		if innerimp > impurityDecrease {
 			bestSplit = bits
 			impurityDecrease = innerimp
-
 		}
-
 	}
-
 	return
 }
 
@@ -777,7 +757,6 @@ func (f *DenseCatFeature) BestBinSplit(target Target,
 	maxEx int,
 	leafSize int,
 	a *BestSplitAllocs) (bestSplit int, impurityDecrease float64, constant bool) {
-
 	cs := *cases
 	catdata := f.CatData
 
@@ -794,7 +773,6 @@ func (f *DenseCatFeature) BestBinSplit(target Target,
 			l++
 			//Never used for two way split
 			// if i != l {
-
 			// 	swaper = cs[i]
 			// 	cs[i] = cs[l]
 			// 	cs[l] = swaper
@@ -823,7 +801,6 @@ func (f *DenseCatFeature) BestBinSplit(target Target,
 	if parentImp < 0 {
 		impurityDecrease = target.SplitImpurity(&a.LM, &a.RM, nil, a)
 	} else {
-
 		impurityDecrease = parentImp - target.SplitImpurity(&a.LM, &a.RM, nil, a)
 	}
 
@@ -848,7 +825,6 @@ allocs contains pointers to reusable structures for use while searching for the 
 be initialized to the proper size with NewBestSplitAlocs.
 */
 func (f *DenseCatFeature) BestCatSplitBig(target Target, cases *[]int, parentImp float64, maxEx int, leafSize int, allocs *BestSplitAllocs) (bestSplit *big.Int, impurityDecrease float64, constant bool) {
-
 	left := *allocs.Left
 	right := *allocs.Right
 
@@ -879,7 +855,6 @@ func (f *DenseCatFeature) BestCatSplitBig(target Target, cases *[]int, parentImp
 	//iteratively build a combination of categories until they
 	//stop getting better
 	for i := big.NewInt(1); i.Cmp(nPartitions) == -1; i.Add(i, big.NewInt(1)) {
-
 		bits.Set(i)
 		if !useExhaustive {
 			//generate random partition
@@ -892,14 +867,12 @@ func (f *DenseCatFeature) BestCatSplitBig(target Target, cases *[]int, parentImp
 		right = right[0:0]
 		j := 0
 		for _, c := range *cases {
-
 			j = f.CatData[c]
-			if 0 != bits.Bit(j) {
+			if bits.Bit(j) != 0 {
 				left = append(left, c)
 			} else {
 				right = append(right, c)
 			}
-
 		}
 
 		//skip cases where the split didn't do any splitting
@@ -917,9 +890,7 @@ func (f *DenseCatFeature) BestCatSplitBig(target Target, cases *[]int, parentImp
 		if innerImp > impurityDecrease {
 			bestSplit.Set(bits)
 			impurityDecrease = innerImp
-
 		}
-
 	}
 
 	return
@@ -932,11 +903,10 @@ internally
 */
 func (f *DenseCatFeature) FilterMissing(cases *[]int, filtered *[]int) {
 	for _, c := range *cases {
-		if f.Missing[c] != true {
+		if !f.Missing[c] {
 			*filtered = append(*filtered, c)
 		}
 	}
-
 }
 
 /*
@@ -971,7 +941,6 @@ func (target *DenseCatFeature) MoveCountsRtoL(allocs *BestSplitAllocs, movedRtoL
 	lcounter := *allocs.LCounter
 	rcounter := *allocs.RCounter
 	for _, i = range *movedRtoL {
-
 		//most expensive statement:
 		cat = catdata[i]
 		lcounter[cat]++
@@ -988,7 +957,6 @@ func (target *DenseCatFeature) UpdateSImpFromAllocs(l *[]int, r *[]int, m *[]int
 	lcounter := *allocs.LCounter
 	rcounter := *allocs.RCounter
 	for _, i = range *movedRtoL {
-
 		//most expensive statement:
 		cat = catdata[i]
 		lcounter[cat]++
@@ -1015,11 +983,8 @@ func (target *DenseCatFeature) UpdateSImpFromAllocs(l *[]int, r *[]int, m *[]int
 // Impurity returns Gini impurity or mean squared error vs the mean for a set of cases
 // depending on weather the feature is categorical or numerical
 func (target *DenseCatFeature) Impurity(cases *[]int, counter *[]int) (e float64) {
-
 	e = target.GiniWithoutAlocate(cases, counter)
-
 	return
-
 }
 
 // Gini returns the gini impurity for the specified cases in the feature
@@ -1049,7 +1014,6 @@ func (target *DenseCatFeature) CountPerCat(cases *[]int, counts *[]int) {
 		counter[catdata[i]]++
 		//counter[target.Geti(i)]++
 	}
-
 }
 
 /*
@@ -1058,7 +1022,6 @@ be a slice with length equal to the number of cases. This allows you to reduce a
 but the counter will also contain per category counts.
 */
 func (target *DenseCatFeature) GiniWithoutAlocate(cases *[]int, counts *[]int) (e float64) {
-
 	total := len(*cases)
 	target.CountPerCat(cases, counts)
 	//fastest way to set e to 1.0?
@@ -1078,7 +1041,6 @@ func (target *DenseCatFeature) ImpFromCounts(total int, counts *[]int) (e float6
 		e -= float64(i*i) / t
 	}
 	return
-
 }
 
 // Span counts the number of distincts cats present in the specified cases.
@@ -1092,7 +1054,6 @@ func (target *DenseCatFeature) Span(cases *[]int, counts *[]int) float64 {
 	missing := target.Missing
 	var c int
 	for _, i := range *cases {
-
 		if !missing[i] {
 			c = catdata[i]
 			if counter[c] == 0 {
@@ -1112,7 +1073,6 @@ func (target *DenseCatFeature) Span(cases *[]int, counts *[]int) float64 {
 func (f *DenseCatFeature) Mode(cases *[]int) (m string) {
 	m = f.Back[f.Modei(cases)]
 	return
-
 }
 
 // Modei returns the mode category feature for the cases specified.
@@ -1122,7 +1082,6 @@ func (f *DenseCatFeature) Modei(cases *[]int) (m int) {
 		if !f.Missing[i] {
 			counts[f.CatData[i]] += 1
 		}
-
 	}
 	max := 0
 	for k, v := range counts {
@@ -1132,18 +1091,15 @@ func (f *DenseCatFeature) Modei(cases *[]int) (m int) {
 		}
 	}
 	return
-
 }
 
 // FindPredicted takes the indexes of a set of cases and returns the
 // predicted value. For categorical features this is a string containing the
 // most common category and for numerical it is the mean of the values.
 func (f *DenseCatFeature) FindPredicted(cases []int) (pred string) {
-
 	pred = f.Mode(&cases)
 
 	return
-
 }
 
 // Shuffle does an inflace shuffle of the specified feature
@@ -1161,7 +1117,6 @@ func (f *DenseCatFeature) Shuffle() {
 		f.CatData[sourcei] = data
 
 	}
-
 }
 
 // ShuffleCases does an inplace shuffle of the specified cases
@@ -1169,7 +1124,6 @@ func (f *DenseCatFeature) ShuffleCases(cases *[]int, allocs *BestSplitAllocs) {
 	capacity := len(*cases)
 	//shuffle
 	for j := 0; j < capacity; j++ {
-
 		targeti := (*cases)[j]
 		sourcei := (*cases)[j+allocs.Rnd.Intn(capacity-j)]
 		missing := f.Missing[targeti]
@@ -1181,7 +1135,6 @@ func (f *DenseCatFeature) ShuffleCases(cases *[]int, allocs *BestSplitAllocs) {
 		f.CatData[sourcei] = data
 
 	}
-
 }
 
 /*
@@ -1193,7 +1146,6 @@ func (f *DenseCatFeature) ShuffledCopy() Feature {
 	fake.Shuffle()
 	fake.(*DenseCatFeature).Name += ":SHUFFLED"
 	return fake
-
 }
 
 /*Copy returns a copy of f.*/
@@ -1214,12 +1166,10 @@ func (f *DenseCatFeature) Copy() Feature {
 	copy(fake.CatData, f.CatData)
 
 	return fake
-
 }
 
 // CopyInTo coppoes the values of the feature into a new feature...doesn't copy CatMap, name etc.
 func (f *DenseCatFeature) CopyInTo(copyf Feature) {
-
 	copy(copyf.(*DenseCatFeature).Missing, f.Missing)
 	copy(copyf.(*DenseCatFeature).CatData, f.CatData)
 }
@@ -1235,11 +1185,8 @@ func (f *DenseCatFeature) ImputeMissing() {
 
 	for i, m := range f.Missing {
 		if m {
-
 			f.CatData[i] = mode
-
 			f.Missing[i] = false
-
 		}
 	}
 	f.HasMissing = false

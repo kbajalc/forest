@@ -80,7 +80,7 @@ func main() {
 	}
 	if *predfn != "" {
 		fmt.Printf("Outputting label predicted actual tsv to %v\n", *predfn)
-		for i, l := range data.CaseLabels {
+		for i, l := range data.Cases {
 			actual := "NA"
 			if hasTarget {
 				actual = data.Data[targeti].GetStr(i)
@@ -124,7 +124,7 @@ func main() {
 		fmt.Fprintf(votefile, "\n")
 
 		for i, box := range cbb.Box {
-			fmt.Fprintf(votefile, "%v", data.CaseLabels[i])
+			fmt.Fprintf(votefile, "%v", data.Cases[i])
 
 			for j, _ := range cbb.CatMap.Back {
 				total := 0.0
@@ -134,7 +134,6 @@ func main() {
 
 			}
 			fmt.Fprintf(votefile, "\n")
-
 		}
 	}
 }

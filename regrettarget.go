@@ -59,7 +59,6 @@ func (target *RegretTarget) UpdateSImpFromAllocs(l *[]int, r *[]int, m *[]int, a
 	lcounter := *allocs.LCounter
 	rcounter := *allocs.RCounter
 	for _, i = range *movedRtoL {
-
 		//most expensive statement:
 		cat = target.Geti(i)
 		lcounter[cat]++
@@ -85,7 +84,6 @@ func (target *RegretTarget) UpdateSImpFromAllocs(l *[]int, r *[]int, m *[]int, a
 // FindPredicted does a mode calulation with the count of the positive/constrained
 // class corrected.
 func (target *RegretTarget) FindPredicted(cases []int) (pred string) {
-
 	mi := 0
 	mc := 0.0
 	counts := make([]int, target.NCats())
@@ -101,12 +99,10 @@ func (target *RegretTarget) FindPredicted(cases []int) (pred string) {
 	}
 
 	return target.NumToCat(mi)
-
 }
 
 // ImpFromCounts recalculates gini impurity from class counts for us in intertive updates.
 func (target *RegretTarget) ImpFromCounts(t int, counter *[]int) (e float64) {
-
 	mi := 0
 
 	mc := 0.0
@@ -118,32 +114,26 @@ func (target *RegretTarget) ImpFromCounts(t int, counter *[]int) (e float64) {
 			mi = cat
 			mc = cc
 		}
-
 	}
 
 	for cat, count := range *counter {
-
 		t += count
 		if cat != mi {
 			e += target.Costs[cat] * float64(count)
 		}
-
 	}
 	e /= float64(t)
 
 	return
-
 }
 
 // Impurity implements an impurity based on misslassification costs.
 func (target *RegretTarget) Impurity(cases *[]int, counter *[]int) (e float64) {
-
 	target.CountPerCat(cases, counter)
 	t := len(*cases)
 	e = target.ImpFromCounts(t, counter)
 
 	return
-
 }
 
 //RegretTarget.Impurity implements a simple regret function that finds the average cost of

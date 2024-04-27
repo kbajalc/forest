@@ -7,7 +7,6 @@ import (
 )
 
 func TestCatFeature(t *testing.T) {
-
 	//Start with a small cat feature and do some simple spliting tests
 	//then build it up and do some best split finding tests
 
@@ -15,9 +14,9 @@ func TestCatFeature(t *testing.T) {
 
 	f := &DenseCatFeature{
 		&CatMap{make(map[string]int, 0),
-			make([]string, 0, 0)},
-		make([]int, 0, 0),
-		make([]bool, 0, 0),
+			make([]string, 0)},
+		make([]int, 0),
+		make([]bool, 0),
 		name,
 		false,
 		false}
@@ -159,9 +158,9 @@ func TestCatFeature(t *testing.T) {
 
 	mediumf := &DenseCatFeature{
 		&CatMap{make(map[string]int, 0),
-			make([]string, 0, 0)},
-		make([]int, 0, 0),
-		make([]bool, 0, 0),
+			make([]string, 0)},
+		make([]int, 0),
+		make([]bool, 0),
 		"mediumf",
 		false,
 		false}
@@ -202,30 +201,28 @@ func TestCatFeature(t *testing.T) {
 	}
 
 	//target.Append(v)
-
 }
 
 func TestBigCatFeature(t *testing.T) {
-
 	bigf := &DenseCatFeature{
 		&CatMap{make(map[string]int, 0),
-			make([]string, 0, 0)},
-		make([]int, 0, 0),
-		make([]bool, 0, 0),
+			make([]string, 0)},
+		make([]int, 0),
+		make([]bool, 0),
 		"big",
 		false,
 		false}
 
 	boolf := &DenseCatFeature{
 		&CatMap{make(map[string]int, 0),
-			make([]string, 0, 0)},
-		make([]int, 0, 0),
-		make([]bool, 0, 0),
+			make([]string, 0)},
+		make([]int, 0),
+		make([]bool, 0),
 		"bool",
 		false,
 		false}
 
-	cases := make([]int, 40, 40)
+	cases := make([]int, 40)
 	for i := 0; i < 40; i++ {
 		bigf.Append(fmt.Sprintf("%v", i))
 		boolf.Append(fmt.Sprintf("%v", i < 20))
@@ -294,5 +291,4 @@ func TestBigCatFeature(t *testing.T) {
 	if len(l) < 18 || len(r) < 18 || len(m) != 1 {
 		t.Errorf("After Coded big random split Left, Right, Missing Lengths = %v %v %v not >=18 >=18 1", len(l), len(r), len(m))
 	}
-
 }

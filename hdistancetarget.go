@@ -59,7 +59,6 @@ func (target *HDistanceTarget) HDist(lcounts *[]int, rcounts *[]int) (d float64)
 	// not needed because monotonic
 	// d = math.Sqrt(d)
 	return
-
 }
 
 func (target *HDistanceTarget) FindPredicted(cases []int) (pred string) {
@@ -72,7 +71,6 @@ func (target *HDistanceTarget) FindPredicted(cases []int) (pred string) {
 		if target.Geti(i) == t {
 			count++
 		}
-
 	}
 	prob_true = float64(count) / float64(len(cases))
 
@@ -81,7 +79,5 @@ func (target *HDistanceTarget) FindPredicted(cases []int) (pred string) {
 
 // HDistanceTarget.Impurity
 func (target *HDistanceTarget) Impurity(cases *[]int, counts *[]int) (e float64) {
-
 	return -1.0
-
 }

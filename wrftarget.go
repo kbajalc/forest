@@ -47,7 +47,6 @@ func (target *WRFTarget) UpdateSImpFromAllocs(l *[]int, r *[]int, m *[]int, allo
 	lcounter := *allocs.LCounter
 	rcounter := *allocs.RCounter
 	for _, i = range *movedRtoL {
-
 		//most expensive statement:
 		cat = target.Geti(i)
 		lcounter[cat]++
@@ -72,7 +71,6 @@ func (target *WRFTarget) UpdateSImpFromAllocs(l *[]int, r *[]int, m *[]int, allo
 
 // Impurity is Gini impurity that uses the weights specified in WRFTarget.weights.
 func (target *WRFTarget) Impurity(cases *[]int, counter *[]int) (e float64) {
-
 	target.CountPerCat(cases, counter)
 
 	return target.ImpFromCounts(counter)
@@ -80,7 +78,6 @@ func (target *WRFTarget) Impurity(cases *[]int, counter *[]int) (e float64) {
 
 // ImpFromCounts recalculates gini impurity from class counts for us in intertive updates.
 func (target *WRFTarget) ImpFromCounts(counter *[]int) (e float64) {
-
 	total := 0.0
 	for i, v := range *counter {
 		w := target.Weights[i]
@@ -93,18 +90,15 @@ func (target *WRFTarget) ImpFromCounts(counter *[]int) (e float64) {
 	e++
 
 	return
-
 }
 
 // FindPredicted finds the predicted target as the weighted catagorical Mode.
 func (target *WRFTarget) FindPredicted(cases []int) (pred string) {
-
 	counts := make([]int, target.NCats())
 	for _, i := range cases {
 		if !target.IsMissing(i) {
 			counts[target.Geti(i)] += 1
 		}
-
 	}
 	m := 0
 	max := 0.0
@@ -119,5 +113,4 @@ func (target *WRFTarget) FindPredicted(cases []int) (pred string) {
 	pred = target.NumToCat(m)
 
 	return
-
 }

@@ -15,7 +15,7 @@ func ParseLibSVM(input io.Reader) *FeatureMatrix {
 
 	data := make([]Feature, 0, 100)
 	lookup := make(map[string]int, 0)
-	labels := make([]string, 0, 0)
+	labels := make([]string, 0)
 
 	i := 0
 	ncases := 0
@@ -38,8 +38,8 @@ func ParseLibSVM(input io.Reader) *FeatureMatrix {
 			if strings.Contains(vals[0], ".") {
 				//looks like a float...add dense float64 feature regression
 				data = append(data, &DenseNumFeature{
-					make([]float64, 0, 0),
-					make([]bool, 0, 0),
+					make([]float64, 0),
+					make([]bool, 0),
 					name,
 					false})
 
@@ -47,14 +47,13 @@ func ParseLibSVM(input io.Reader) *FeatureMatrix {
 				//doesn't look like a float...add dense catagorical
 				data = append(data, &DenseCatFeature{
 					&CatMap{make(map[string]int, 0),
-						make([]string, 0, 0)},
-					make([]int, 0, 0),
-					make([]bool, 0, 0),
+						make([]string, 0)},
+					make([]int, 0),
+					make([]bool, 0),
 					name,
 					false,
 					false})
 			}
-
 		}
 		data[0].Append(vals[0])
 
@@ -74,14 +73,13 @@ func ParseLibSVM(input io.Reader) *FeatureMatrix {
 				name := fmt.Sprintf("%v", len(data))
 				lookup[name] = len(data)
 				data = append(data, &DenseNumFeature{
-					make([]float64, ncases, ncases),
-					make([]bool, ncases, ncases),
+					make([]float64, ncases),
+					make([]bool, ncases),
 					name,
 					false})
 
 			}
 			data[xi].PutStr(i, parts[1])
-
 		}
 
 		label := fmt.Sprintf("%v", i)
@@ -93,25 +91,23 @@ func ParseLibSVM(input io.Reader) *FeatureMatrix {
 	fm := &FeatureMatrix{data, lookup, labels}
 
 	return fm
-
 }
 
 func WriteLibSvm(data *FeatureMatrix, targetn string, outfile io.Writer) error {
 	targeti, ok := data.Map[targetn]
 	if !ok {
-		return fmt.Errorf("Target '%v' not found in data.", targetn)
+		return fmt.Errorf("Target '%v' not found in data", targetn)
 	}
 	target := data.Data[targeti]
 
 	//data.Data = append(data.Data[:targeti], data.Data[targeti+1:]...)
 
-	noTargetFm := &FeatureMatrix{make([]Feature, 0, len(data.Data)), make(map[string]int), data.CaseLabels}
+	noTargetFm := &FeatureMatrix{make([]Feature, 0, len(data.Data)), make(map[string]int), data.Cases}
 
 	for i, f := range data.Data {
 		if i != targeti {
 			noTargetFm.Map[f.GetName()] = len(noTargetFm.Data)
 			noTargetFm.Data = append(noTargetFm.Data, f.Copy())
-
 		}
 	}
 
@@ -123,11 +119,11 @@ func WriteLibSvm(data *FeatureMatrix, targetn string, outfile io.Writer) error {
 
 	for i := 0; i < target.Length(); i++ {
 		entries := make([]string, 0, 10)
-		switch target.(type) {
+		switch t := target.(type) {
 		case NumFeature:
-			entries = append(entries, target.GetStr(i))
+			entries = append(entries, t.GetStr(i))
 		case CatFeature:
-			entries = append(entries, fmt.Sprintf("%v", target.(CatFeature).Geti(i)))
+			entries = append(entries, fmt.Sprintf("%v", t.Geti(i)))
 		}
 
 		for j, f := range encodedfm.Data {
@@ -141,7 +137,6 @@ func WriteLibSvm(data *FeatureMatrix, targetn string, outfile io.Writer) error {
 		if err != nil {
 			return err
 		}
-
 	}
 	oucsv.Flush()
 	return nil
@@ -150,11 +145,11 @@ func WriteLibSvm(data *FeatureMatrix, targetn string, outfile io.Writer) error {
 func WriteLibSvmCases(data *FeatureMatrix, cases []int, targetn string, outfile io.Writer) error {
 	targeti, ok := data.Map[targetn]
 	if !ok {
-		return fmt.Errorf("Target '%v' not found in data.", targetn)
+		return fmt.Errorf("Target '%v' not found in data", targetn)
 	}
 	target := data.Data[targeti]
 
-	noTargetFm := &FeatureMatrix{make([]Feature, 0, len(data.Data)), make(map[string]int), data.CaseLabels}
+	noTargetFm := &FeatureMatrix{make([]Feature, 0, len(data.Data)), make(map[string]int), data.Cases}
 
 	encode := false
 	for i, f := range data.Data {
@@ -164,7 +159,6 @@ func WriteLibSvmCases(data *FeatureMatrix, cases []int, targetn string, outfile 
 			}
 			noTargetFm.Map[f.GetName()] = len(noTargetFm.Data)
 			noTargetFm.Data = append(noTargetFm.Data, f)
-
 		}
 	}
 
@@ -180,11 +174,11 @@ func WriteLibSvmCases(data *FeatureMatrix, cases []int, targetn string, outfile 
 
 	for _, i := range cases {
 		entries := make([]string, 0, 10)
-		switch target.(type) {
+		switch t := target.(type) {
 		case NumFeature:
-			entries = append(entries, fmt.Sprintf("%g", target.(NumFeature).Get(i)))
+			entries = append(entries, fmt.Sprintf("%g", t.Get(i)))
 		case CatFeature:
-			entries = append(entries, fmt.Sprintf("%v", target.(CatFeature).Geti(i)))
+			entries = append(entries, fmt.Sprintf("%v", t.Geti(i)))
 		}
 
 		for j, f := range encodedfm.Data {
@@ -198,7 +192,6 @@ func WriteLibSvmCases(data *FeatureMatrix, cases []int, targetn string, outfile 
 		if err != nil {
 			return err
 		}
-
 	}
 	oucsv.Flush()
 	return nil

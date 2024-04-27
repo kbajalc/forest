@@ -41,7 +41,6 @@ func (target *L1Target) Impurity(cases *[]int, counter *[]int) (e float64) {
 	m := target.Mean(cases)
 	e = target.Error(cases, m)
 	return
-
 }
 
 // L1Target.MeanL1Error returns the  Mean L1 norm error of the cases specified vs the predicted
@@ -54,9 +53,7 @@ func (target *L1Target) Error(cases *[]int, predicted float64) (e float64) {
 			e += math.Abs(predicted - target.Get(i))
 			n += 1
 		}
-
 	}
 	e = e / float64(n)
 	return
-
 }

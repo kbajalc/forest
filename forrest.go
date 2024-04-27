@@ -43,9 +43,9 @@ func GrowRandomForest(fm *FeatureMatrix,
 
 	f = &Forest{target.GetName(), make([]*Tree, 0, nTrees), 0.0}
 
-	switch target.(type) {
+	switch t := target.(type) {
 	case TargetWithIntercept:
-		f.Intercept = target.(TargetWithIntercept).Intercept()
+		f.Intercept = t.Intercept()
 	}
 
 	//Slices for reuse during search for best splitter.
@@ -57,10 +57,10 @@ func GrowRandomForest(fm *FeatureMatrix,
 
 		f.Trees = append(f.Trees, NewTree())
 		f.Trees[i].Grow(fm, target, cases, candidates, nil, mTry, leafSize, maxDepth, splitmissing, force, vet, evaloob, false, importance, nil, allocs)
-		switch target.(type) {
+		switch t := target.(type) {
 		case BoostingTarget:
 			ls, ps := f.Trees[i].Partition(fm)
-			f.Trees[i].Weight = target.(BoostingTarget).Boost(ls, ps)
+			f.Trees[i].Weight = t.Boost(ls, ps)
 		}
 	}
 	return

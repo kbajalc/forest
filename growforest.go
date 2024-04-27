@@ -114,7 +114,7 @@ type GrowForest struct {
 	Vet bool
 
 	// positive: true, Positive class to output probabilities for.
-	positive string
+	Positive string
 
 	// NP: Do approximate Neyman-Pearson classification.
 	NP bool
@@ -193,7 +193,7 @@ func NewGrowForest() *GrowForest {
 	g := GrowForest{
 		Trees:      100,
 		TransAlpha: 10.0,
-		positive:   "true",
+		Positive:   "True",
 		NP_pos:     "1",
 		NP_a:       0.1,
 		NP_k:       100,
@@ -305,7 +305,7 @@ func GrowForestParse() *GrowForest {
 	flag.BoolVar(&g.Vet, "vet", false, "Penalize potential splitter impurity decrease by subtracting the best split of a permuted target.")
 
 	// positive string
-	flag.StringVar(&g.positive, "positive", "True", "Positive class to output probabilities for.")
+	flag.StringVar(&g.Positive, "positive", "True", "Positive class to output probabilities for.")
 
 	// NP bool
 	flag.BoolVar(&g.NP, "NP", false, "Do approximate Neyman-Pearson classification.")
@@ -405,17 +405,11 @@ func (g *GrowForest) Fit() {
 	// 	runtime.GOMAXPROCS(nCores)
 	// }
 
-	fmt.Printf("Threads : %v\n", g.Cores)
-	fmt.Printf("nTrees : %v\n", g.Trees)
-
-	//Parse Data
-	fmt.Printf("Loading data from: %v\n", g.TrainFile)
-	data, err := LoadAFM(g.TrainFile)
-	if err != nil {
-		log.Fatal(err)
-	}
+	fmt.Printf("! Cores: %v\n", g.Cores)
+	fmt.Printf("! Trees: %v\n", g.Trees)
 
 	if g.CpuProfile != "" {
+		fmt.Printf("> CPU Profile: %v\n", g.CpuProfile)
 		f, err := os.Create(g.CpuProfile)
 		if err != nil {
 			log.Fatal(err)
@@ -424,19 +418,26 @@ func (g *GrowForest) Fit() {
 		defer pprof.StopCPUProfile()
 	}
 
+	//Parse Data
+	fmt.Printf("< Data: %v\n", g.TrainFile)
+	data, err := LoadAFM(g.TrainFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	if g.Contrasts > 0 {
-		fmt.Printf("Adding %v Random Contrasts\n", g.Contrasts)
+		fmt.Printf("- Adding %v Random Contrasts\n", g.Contrasts)
 		data.AddContrasts(g.Contrasts)
 	}
 	if g.ContrastAll {
-		fmt.Printf("Adding Random Contrasts for All Features.\n")
+		fmt.Printf("- Adding Random Contrasts for All Features.\n")
 		data.ContrastAll()
 	}
 
 	blacklisted := 0
 	blacklistis := make([]bool, len(data.Data))
 	if g.Blacklist != "" {
-		fmt.Printf("Loading blacklist from: %v\n", g.Blacklist)
+		fmt.Printf("- Blacklist: %v\n", g.Blacklist)
 		blackfile, err := os.Open(g.Blacklist)
 		if err != nil {
 			log.Fatal(err)
@@ -452,20 +453,19 @@ func (g *GrowForest) Fit() {
 			}
 			i, ok := data.Map[id[0]]
 			if !ok {
-				fmt.Printf("Ignoring blacklist feature not found in data: %v\n", id[0])
+				fmt.Printf("- Ignoring blacklist feature not found in data: %v\n", id[0])
 				continue
 			}
 			if !blacklistis[i] {
 				blacklisted += 1
 				blacklistis[i] = true
 			}
-
 		}
 		blackfile.Close()
 	}
 
 	//find the target feature
-	fmt.Printf("Target : %v\n", g.TargetName)
+	fmt.Printf("< Target: %v\n", g.TargetName)
 	targeti, ok := data.Map[g.TargetName]
 	if !ok {
 		log.Fatal("Target not found in data.")
@@ -475,7 +475,7 @@ func (g *GrowForest) Fit() {
 		re := regexp.MustCompile(g.BlockRE)
 		for i, feature := range data.Data {
 			if targeti != i && re.MatchString(feature.GetName()) {
-				if blacklistis[i] == false {
+				if !blacklistis[i] {
 					blacklisted += 1
 					blacklistis[i] = true
 				}
@@ -487,7 +487,7 @@ func (g *GrowForest) Fit() {
 		re := regexp.MustCompile(g.IncludeRE)
 		for i, feature := range data.Data {
 			if targeti != i && !re.MatchString(feature.GetName()) {
-				if blacklistis[i] == false {
+				if !blacklistis[i] {
 					blacklisted += 1
 					blacklistis[i] = true
 				}
@@ -496,21 +496,21 @@ func (g *GrowForest) Fit() {
 	}
 
 	nFeatures := len(data.Data) - blacklisted - 1
-	fmt.Printf("Non Target Features : %v\n", nFeatures)
+	fmt.Printf("< Features: %v\n", nFeatures)
 
 	mTry := ParseAsIntOrFractionOfTotal(g.MTry, nFeatures)
 	if mTry <= 0 {
 		mTry = int(math.Ceil(math.Sqrt(float64(nFeatures))))
 	}
-	fmt.Printf("mTry : %v\n", mTry)
+	fmt.Printf("< mTry: %v\n", mTry)
 
 	if g.Impute {
-		fmt.Println("Imputing missing values to feature mean/mode.")
+		fmt.Println("- Imputing missing values to feature mean/mode.")
 		data.ImputeMissing()
 	}
 
 	if g.Permute {
-		fmt.Println("Permuting target feature.")
+		fmt.Println("- Permuting target feature.")
 		data.Data[targeti].Shuffle()
 	}
 
@@ -524,7 +524,7 @@ func (g *GrowForest) Fit() {
 
 			}
 		}
-		fmt.Printf("Shuffled %v features matching %v\n", shuffled, g.ShuffleRE)
+		fmt.Printf("- Shuffled %v features matching %v\n", shuffled, g.ShuffleRE)
 	}
 
 	targetf := data.Data[targeti]
@@ -547,7 +547,7 @@ func (g *GrowForest) Fit() {
 			nNonMissing += 1
 		}
 	}
-	fmt.Printf("non-missing cases: %v\n", nNonMissing)
+	fmt.Printf("< Non-Missing cases: %v\n", nNonMissing)
 
 	leafSize := ParseAsIntOrFractionOfTotal(g.LeafSize, nNonMissing)
 
@@ -562,14 +562,14 @@ func (g *GrowForest) Fit() {
 			leafSize = 1
 		}
 	}
-	fmt.Printf("leafSize : %v\n", leafSize)
+	fmt.Printf("< Leaf size: %v\n", leafSize)
 
 	//infer nSamples and mTry from data if they are 0
 	nSamples := ParseAsIntOrFractionOfTotal(g.NSamples, nNonMissing)
 	if nSamples <= 0 {
 		nSamples = nNonMissing
 	}
-	fmt.Printf("nSamples : %v\n", nSamples)
+	fmt.Printf("< nSamples: %v\n", nSamples)
 
 	if g.Progress {
 		g.OOB = true
@@ -577,146 +577,122 @@ func (g *GrowForest) Fit() {
 	if g.CaseOOB != "" {
 		g.OOB = true
 	}
-	var oobVotes VoteTallyer
-	if g.OOB {
-		fmt.Println("Recording oob error.")
-		if targetf.NCats() == 0 {
-			//regression
-			oobVotes = NewNumBallotBox(data.Data[0].Length())
-		} else {
-			//classification
-			oobVotes = NewCatBallotBox(data.Data[0].Length())
-		}
-	}
+
+	fmt.Println("-----------------------")
 
 	//****** Set up Target for Alternative Impurity  if needed *******//
 	var target Target
 	if g.Density {
-		fmt.Println("Estimating Density.")
+		fmt.Println("@ Estimating Density.")
 		target = &DensityTarget{&data.Data, nNonMissing}
 	} else {
-
-		switch targetf.(type) {
-
+		switch tf := targetf.(type) {
 		case NumFeature:
-			fmt.Println("Performing regression.")
+			fmt.Println("@ Performing regression.")
 			if g.L1 {
-				fmt.Println("Using l1/absolute deviance error.")
-				targetf = &L1Target{targetf.(NumFeature)}
+				fmt.Println("- Using l1/absolute deviance error.")
+				targetf = &L1Target{tf}
 			}
 			if g.Ordinal {
-				fmt.Println("Using Ordinal (mode) prediction.")
-				targetf = NewOrdinalTarget(targetf.(NumFeature))
+				fmt.Println("- Using Ordinal (mode) prediction.")
+				targetf = NewOrdinalTarget(tf)
 			}
 			switch {
 			case g.GradBoost != 0.0:
-				fmt.Println("Using Gradient Boosting.")
-				targetf = NewGradBoostTarget(targetf.(NumFeature), g.GradBoost)
+				fmt.Println("- Using Gradient Boosting.")
+				targetf = NewGradBoostTarget(tf, g.GradBoost)
 
 			case g.AdaBoost:
-				fmt.Println("Using Numeric Adaptive Boosting.")
-				targetf = NewNumAdaBoostTarget(targetf.(NumFeature))
+				fmt.Println("- Using Numeric Adaptive Boosting.")
+				targetf = NewNumAdaBoostTarget(tf)
 			}
 			target = targetf
 
 		case CatFeature:
-			fmt.Printf("Performing classification with %v categories.\n", targetf.NCats())
+			fmt.Printf("@ Performing classification with %v categories.\n", targetf.NCats())
 			switch {
 			case g.NP:
-				fmt.Printf("Performing Approximate Neyman-Pearson Classification with constrained false \"%v\".\n", g.NP_pos)
-				fmt.Printf("False %v constraint: %v, constraint weight: %v.\n", g.NP_pos, g.NP_a, g.NP_k)
-				targetf = NewNPTarget(targetf.(CatFeature), g.NP_pos, g.NP_a, g.NP_k)
+				fmt.Printf("- Performing Approximate Neyman-Pearson Classification with constrained false \"%v\".\n", g.NP_pos)
+				fmt.Printf("- False %v constraint: %v, constraint weight: %v.\n", g.NP_pos, g.NP_a, g.NP_k)
+				targetf = NewNPTarget(tf, g.NP_pos, g.NP_a, g.NP_k)
 			case g.Costs != "":
-				fmt.Println("Using misclassification costs: ", g.Costs)
+				fmt.Println("- Using misclassification costs: ", g.Costs)
 				costmap := make(map[string]float64)
 				err := json.Unmarshal([]byte(g.Costs), &costmap)
 				if err != nil {
 					log.Fatal(err)
 				}
 
-				regTarg := NewRegretTarget(targetf.(CatFeature))
+				regTarg := NewRegretTarget(tf)
 				regTarg.SetCosts(costmap)
 				targetf = regTarg
 			case g.Dentropy != "":
-				fmt.Println("Using entropy with disutilities: ", g.Dentropy)
+				fmt.Println("- Using entropy with disutilities: ", g.Dentropy)
 				costmap := make(map[string]float64)
 				err := json.Unmarshal([]byte(g.Dentropy), &costmap)
 				if err != nil {
 					log.Fatal(err)
 				}
 
-				deTarg := NewDEntropyTarget(targetf.(CatFeature))
+				deTarg := NewDEntropyTarget(tf)
 				deTarg.SetCosts(costmap)
 				targetf = deTarg
 			case g.AdaCosts != "":
-				fmt.Println("Using cost sensative AdaBoost costs: ", g.AdaCosts)
+				fmt.Println("- Using cost sensative AdaBoost costs: ", g.AdaCosts)
 				costmap := make(map[string]float64)
 				err := json.Unmarshal([]byte(g.AdaCosts), &costmap)
 				if err != nil {
 					log.Fatal(err)
 				}
 
-				actarget := NewAdaCostTarget(targetf.(CatFeature))
+				actarget := NewAdaCostTarget(tf)
 				actarget.SetCosts(costmap)
 				targetf = actarget
 
 			case g.RfWeights != "":
-				fmt.Println("Using rf weights: ", g.RfWeights)
+				fmt.Println("- Using rf weights: ", g.RfWeights)
 				weightmap := make(map[string]float64)
 				err := json.Unmarshal([]byte(g.RfWeights), &weightmap)
 				if err != nil {
 					log.Fatal(err)
 				}
 
-				wrfTarget := NewWRFTarget(targetf.(CatFeature), weightmap)
+				wrfTarget := NewWRFTarget(tf, weightmap)
 				targetf = wrfTarget
 
 			case g.Entropy:
-				fmt.Println("Using entropy minimization.")
-				targetf = &EntropyTarget{targetf.(CatFeature)}
+				fmt.Println("- Using entropy minimization.")
+				targetf = &EntropyTarget{tf}
 
 			case g.AdaBoost:
-				fmt.Println("Using Adaptive Boosting.")
-				targetf = NewAdaBoostTarget(targetf.(CatFeature))
+				fmt.Println("- Using Adaptive Boosting.")
+				targetf = NewAdaBoostTarget(tf)
 
 			case g.Hellinger:
-				fmt.Println("Using Hellinger Distance with postive class:", g.positive)
-				targetf = NewHDistanceTarget(targetf.(CatFeature), g.positive)
+				fmt.Println("- Using Hellinger Distance with postive class:", g.Positive)
+				targetf = NewHDistanceTarget(tf, g.Positive)
 
 			case g.GradBoost != 0.0:
-				fmt.Println("Using Gradient Boosting Classification with postive class:", g.positive)
-				targetf = NewGradBoostClassTarget(targetf.(CatFeature), g.GradBoost, g.positive)
+				fmt.Println("- Using Gradient Boosting Classification with postive class:", g.Positive)
+				targetf = NewGradBoostClassTarget(tf, g.GradBoost, g.Positive)
 
 			}
 
 			if g.TransUnlabeled != "" {
-				fmt.Println("Using traduction forests with unlabeled class: ", g.TransUnlabeled)
-				targetf = NewTransTarget(targetf.(CatFeature), &data.Data, g.TransUnlabeled, g.TransAlpha, g.TransBeta, nNonMissing)
+				fmt.Println("+ Using traduction forests with unlabeled class: ", g.TransUnlabeled)
+				targetf = NewTransTarget(tf, &data.Data, g.TransUnlabeled, g.TransAlpha, g.TransBeta, nNonMissing)
 
 			}
 			target = targetf
 		}
 	}
 
-	var forestwriter *ForestWriter
-	if g.ForestFile != "" {
-		forestfile, err := os.Create(g.ForestFile)
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer forestfile.Close()
-		forestwriter = NewForestWriter(forestfile)
-		switch target.(type) {
-		case TargetWithIntercept:
-			forestwriter.WriteForestHeader(0, g.TargetName, target.(TargetWithIntercept).Intercept())
-		}
-	}
 	//****************** Setup For ACE ********************************//
 	var aceImps [][]float64
 	firstace := len(data.Data)
 
 	if g.Ace > 0 {
-		fmt.Printf("Performing ACE analysis with %v forests/permutations.\n", g.Ace)
+		fmt.Printf("- Performing ACE analysis with %v forests/permutations.\n", g.Ace)
 
 		data.ContrastAll()
 
@@ -735,6 +711,21 @@ func (g *GrowForest) Fit() {
 		}
 	}
 
+	var forestwriter *ForestWriter
+	if g.ForestFile != "" {
+		fmt.Printf("> Model: %s\n", g.ForestFile)
+		forestfile, err := os.Create(g.ForestFile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer forestfile.Close()
+		forestwriter = NewForestWriter(forestfile)
+		switch t := target.(type) {
+		case TargetWithIntercept:
+			forestwriter.WriteForestHeader(0, g.TargetName, t.Intercept())
+		}
+	}
+
 	//****************** Needed Collections and vars ******************//
 	var trees []*Tree
 	trees = make([]*Tree, 0, g.Trees)
@@ -742,7 +733,7 @@ func (g *GrowForest) Fit() {
 	var imppnt *[]*RunningMean
 	var mmdpnt *[]*RunningMean
 	if g.Importance != "" {
-		fmt.Println("Recording Importance Scores.")
+		fmt.Println("- Recording Importance scores")
 
 		imppnt = NewRunningMeans(len(data.Data))
 		mmdpnt = NewRunningMeans(len(data.Data))
@@ -757,6 +748,18 @@ func (g *GrowForest) Fit() {
 
 	//****************** Good Stuff Stars Here ;) ******************//
 
+	var oobVotes VoteTallyer
+	if g.OOB {
+		fmt.Println("- Recording OOB error")
+		if targetf.NCats() == 0 {
+			//regression
+			oobVotes = NewNumBallotBox(data.Data[0].Length())
+		} else {
+			//classification
+			oobVotes = NewCatBallotBox(data.Data[0].Length())
+		}
+	}
+
 	trainingStart := time.Now()
 
 	for foresti := 0; foresti < nForest; foresti++ {
@@ -766,11 +769,10 @@ func (g *GrowForest) Fit() {
 		var waitGroup sync.WaitGroup
 
 		waitGroup.Add(g.Cores)
-		treechan := make(chan *Tree, 0)
+		treechan := make(chan *Tree)
 		//fmt.Println("forest ", foresti)
 		//Grow a single forest on nCores
 		for core := 0; core < g.Cores; core++ {
-
 			grow := func() {
 				weight := -1.0
 				canidates := make([]int, 0, len(data.Data))
@@ -866,7 +868,7 @@ func (g *GrowForest) Fit() {
 						weight = targetf.(BoostingTarget).Boost(ls, ps)
 						boostMutex.Unlock()
 						if weight == math.Inf(1) {
-							fmt.Printf("Boosting Reached Weight of %v\n", weight)
+							fmt.Printf("- Boosting Reached Weight of %v\n", weight)
 							close(treechan)
 							break
 						}
@@ -904,7 +906,7 @@ func (g *GrowForest) Fit() {
 					}
 					if g.Progress {
 						treesFinished++
-						fmt.Printf("Model oob error after tree %v : %v\n", treesFinished, oobVotes.TallyError(unboostedTarget))
+						fmt.Printf("- Model oob error after tree %v : %v\n", treesFinished, oobVotes.TallyError(unboostedTarget))
 					}
 					if treesStarted < g.Trees {
 						treesStarted++
@@ -930,7 +932,6 @@ func (g *GrowForest) Fit() {
 			} else {
 				grow()
 			}
-
 		}
 		if g.Cores > 1 {
 			waitGroup.Wait()
@@ -966,7 +967,7 @@ func (g *GrowForest) Fit() {
 		//Record importance scores from this forest for ace
 		if g.Ace > 0 && (g.Cutoff == 0.0 || foresti < nForest-1) {
 			if foresti < nForest-1 {
-				fmt.Printf("Finished ACE forest %v.\n", foresti)
+				fmt.Printf("- Finished ACE forest %v.\n", foresti)
 			}
 			//Record Importance scores
 			for i := 0; i < len(data.Data); i++ {
@@ -987,7 +988,6 @@ func (g *GrowForest) Fit() {
 			if g.Cutoff > 0 && foresti == nForest-2 {
 				sigcount := 0
 				for i := range blacklistis {
-
 					if i < firstace && !blacklistis[i] {
 						p, _, _, m := Ttest(&aceImps[i], &aceImps[i+firstace])
 						if p < g.Cutoff && m > 0.0 && i != targeti {
@@ -1004,18 +1004,24 @@ func (g *GrowForest) Fit() {
 				}
 				mTry = ParseAsIntOrFractionOfTotal(g.MTry, sigcount)
 				if mTry <= 0 {
-
 					mTry = int(math.Ceil(math.Sqrt(float64(sigcount))))
 				}
-				fmt.Printf("Growing non-ACE forest with %v features with p-value < %v.\nmTry: %v\n", sigcount, g.Cutoff, mTry)
+				fmt.Printf("- Growing non-ACE forest with %v features with p-value < %v.\nmTry: %v\n", sigcount, g.Cutoff, mTry)
 			}
 		}
 	}
 
 	trainingEnd := time.Now()
-	fmt.Printf("Total training time (seconds): %v\n", trainingEnd.Sub(trainingStart).Seconds())
+	fmt.Printf("= Total training time (seconds): %v\n", trainingEnd.Sub(trainingStart).Seconds())
+
+	fmt.Println("-----------------------")
+
+	if g.OOB {
+		fmt.Printf("= Out of Bag Error : %v\n", oobVotes.TallyError(unboostedTarget))
+	}
 
 	if g.ScikitForest != "" {
+		fmt.Printf("> Scikit Forest: %v\n", g.ScikitForest)
 		skfile, err := os.Create(g.ScikitForest)
 		if err != nil {
 			log.Fatal(err)
@@ -1028,35 +1034,29 @@ func (g *GrowForest) Fit() {
 		}
 	}
 
-	if g.OOB {
-		fmt.Printf("Out of Bag Error : %v\n", oobVotes.TallyError(unboostedTarget))
-	}
 	if g.CaseOOB != "" {
+		fmt.Printf("> OOB predictions: %v\n", g.CaseOOB)
 		caseoobfile, err := os.Create(g.CaseOOB)
 		if err != nil {
 			log.Fatal(err)
 		}
 		defer caseoobfile.Close()
 		for i := 0; i < unboostedTarget.Length(); i++ {
-			fmt.Fprintf(caseoobfile, "%v\t%v\t%v\n", data.CaseLabels[i], oobVotes.Tally(i), unboostedTarget.GetStr(i))
+			fmt.Fprintf(caseoobfile, "%v\t%v\t%v\n", data.Cases[i], oobVotes.Tally(i), unboostedTarget.GetStr(i))
 		}
 	}
 
 	if g.Importance != "" {
-
+		fmt.Printf("> Importance scores: %v\n", g.Importance)
 		impfile, err := os.Create(g.Importance)
 		if err != nil {
 			log.Fatal(err)
 		}
 		defer impfile.Close()
 		if g.Ace > 0 {
-
 			for i := 0; i < firstace; i++ {
-
 				p, _, _, m := Ttest(&aceImps[i], &aceImps[i+firstace])
-
 				fmt.Fprintf(impfile, "%v\t%v\t%v\t%v\n", g.TargetName, data.Data[i].GetName(), p, m)
-
 			}
 		} else {
 			//Write standard importance file
@@ -1064,12 +1064,13 @@ func (g *GrowForest) Fit() {
 				mean, count := v.Read()
 				meanMinDepth, treeCount := (*mmdpnt)[i].Read()
 				fmt.Fprintf(impfile, "%v\t%v\t%v\t%v\t%v\t%v\t%v\n", data.Data[i].GetName(), mean, count, mean*float64(count)/float64(g.Trees), mean*float64(count)/float64(treeCount), treeCount, meanMinDepth)
-
 			}
 		}
 	}
 
 	if g.SelfTest {
+		fmt.Println("-----------------------")
+
 		var bb VoteTallyer
 
 		testdata := data
@@ -1087,7 +1088,6 @@ func (g *GrowForest) Fit() {
 			testtarget = testdata.Data[targeti]
 
 			for _, tree := range trees {
-
 				tree.StripCodes()
 
 			}
@@ -1105,7 +1105,7 @@ func (g *GrowForest) Fit() {
 			tree.Vote(testdata, bb)
 		}
 
-		fmt.Printf("Error: %v\n", bb.TallyError(testtarget))
+		fmt.Printf("= Error: %v\n", bb.TallyError(testtarget))
 
 		if testtarget.NCats() != 0 {
 			falsesbypred := make([]int, testtarget.NCats())
@@ -1130,21 +1130,20 @@ func (g *GrowForest) Fit() {
 						correct++
 						truebytrue[truei]++
 					} else {
-
 						falsesbypred[predi]++
 					}
 				}
 
 			}
-			fmt.Printf("Classified: %v / %v = %v\n", correct, length, float64(correct)/float64(length))
+			fmt.Printf("= Classified: %v / %v = %v\n", correct, length, float64(correct)/float64(length))
 			for i, v := range testtarget.(*DenseCatFeature).Back {
-				fmt.Printf("Label %v Percision (Actuall/Predicted): %v / %v = %v\n", v, falsesbypred[i], predtotals[i], float64(falsesbypred[i])/float64(predtotals[i]))
+				fmt.Printf("- Label [%v] Percision (Actuall/Predicted): %v / %v = %v\n", v, falsesbypred[i], predtotals[i], float64(falsesbypred[i])/float64(predtotals[i]))
 				falses := truetotals[i] - truebytrue[i]
-				fmt.Printf("Label %v Missed/Actuall Rate: %v / %v = %v\n", v, falses, truetotals[i], float64(falses)/float64(truetotals[i]))
+				fmt.Printf("- Label [%v] Missed/Actuall Rate: %v / %v = %v\n", v, falses, truetotals[i], float64(falses)/float64(truetotals[i]))
 
 			}
 			if nas != 0 {
-				fmt.Printf("Couldn't predict %v cases due to missing values.\n", nas)
+				fmt.Printf("= Couldn't predict %v cases due to missing values.\n", nas)
 			}
 		}
 	}

@@ -64,13 +64,11 @@ func (target *EntropyTarget) ImpFromCounts(total int, counts *[]int) (e float64)
 		}
 	}
 	return
-
 }
 
 // EntropyTarget.Impurity implements categorical entropy as sum(pj*log2(pj)) where pj
 // is the number of cases with the j'th category over the total number of cases.
 func (target *EntropyTarget) Impurity(cases *[]int, counts *[]int) (e float64) {
-
 	total := len(*cases)
 	target.CountPerCat(cases, counts)
 
@@ -80,9 +78,7 @@ func (target *EntropyTarget) Impurity(cases *[]int, counts *[]int) (e float64) {
 			p = float64(i) / float64(total)
 			e -= p * math.Log(p)
 		}
-
 	}
 
 	return
-
 }

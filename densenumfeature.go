@@ -32,6 +32,11 @@ func (f *DenseNumFeature) Append(v string) {
 	f.Missing = append(f.Missing, false)
 }
 
+func (f *DenseNumFeature) Push(fv float64) {
+	f.NumData = append(f.NumData, fv)
+	f.Missing = append(f.Missing, false)
+}
+
 // Less checks if the value of case i is less then the value of j.
 func (f *DenseNumFeature) Less(i int, j int) bool {
 	return f.NumData[i] < f.NumData[j]
@@ -112,7 +117,6 @@ func (f *DenseNumFeature) Predicted(cases *[]int) float64 {
 // Norm defines the norm to use to tell how far the i'th case if from the value v
 func (f *DenseNumFeature) Norm(i int, v float64) float64 {
 	return math.Abs(f.NumData[i] - v)
-
 }
 
 // Split does an inplace slit from a coded split (a float64) and returns slices pointing into the origional cases slice.
@@ -141,7 +145,6 @@ func (f *DenseNumFeature) Split(codedSplit interface{}, cases []int) (l []int, r
 				i--
 
 			}
-
 		} else {
 			//Right
 			lastright -= 1
@@ -149,9 +152,7 @@ func (f *DenseNumFeature) Split(codedSplit interface{}, cases []int) (l []int, r
 			cases[i] = cases[lastright]
 			cases[lastright] = swaper
 			i -= 1
-
 		}
-
 	}
 
 	l = cases[:lastleft+1]
@@ -189,7 +190,6 @@ func (f *DenseNumFeature) SplitPoints(codedSplit interface{}, cs *[]int) (int, i
 				i--
 
 			}
-
 		} else {
 			//Right
 			lastright--
@@ -197,9 +197,7 @@ func (f *DenseNumFeature) SplitPoints(codedSplit interface{}, cs *[]int) (int, i
 			cases[i] = cases[lastright]
 			cases[lastright] = swaper
 			i--
-
 		}
-
 	}
 	lastleft++
 
@@ -210,9 +208,7 @@ func (f *DenseNumFeature) SplitPoints(codedSplit interface{}, cs *[]int) (int, i
 // BestCatSplit. Numeric splitters are decoded to send values <= num left. Categorical
 // splitters are decoded to send categorical values for which the bit in cat is 1 left.
 func (f *DenseNumFeature) DecodeSplit(codedSplit interface{}) (s *Splitter) {
-
 	s = &Splitter{f.Name, true, codedSplit.(float64), nil}
-
 	return
 }
 
@@ -268,7 +264,6 @@ func (f *DenseNumFeature) BestSplit(target Target,
 		impurityDecrease = parentImp + ((float64(nonmissing)*(impurityDecrease-nonmissingparentImp) - float64(nmissing)*missingimp) / float64(total))
 	}
 	return
-
 }
 
 /*
@@ -289,7 +284,6 @@ func (f *DenseNumFeature) BestNumSplit(target Target,
 	leafSize int,
 	randomSplit bool,
 	allocs *BestSplitAllocs) (codedSplit interface{}, impurityDecrease float64, constant bool) {
-
 	impurityDecrease = minImp
 	var splitf float64
 
@@ -317,17 +311,15 @@ func (f *DenseNumFeature) BestNumSplit(target Target,
 			leafSize = leafSize + allocs.Rnd.Intn(stop-leafSize)
 			lasti = leafSize - 1
 			stop = leafSize + 1
-
 		}
 
 		for i := leafSize; i < stop; i++ {
-
 			//skip cases where the next sorted case has the same value as these can't be split on
 			if sortedData[i] <= (sortedData[lasti] + constant_cutoff) {
 				continue
-				if randomSplit {
-					stop++
-				}
+				// if randomSplit {
+				// 	stop++
+				// }
 			}
 
 			if lastsplit == 0 {
@@ -363,9 +355,7 @@ func (f *DenseNumFeature) BestNumSplit(target Target,
 
 			}
 			lasti = i
-
 		}
-
 	}
 	codedSplit = splitf
 	return
@@ -378,11 +368,10 @@ internally
 */
 func (f *DenseNumFeature) FilterMissing(cases *[]int, filtered *[]int) {
 	for _, c := range *cases {
-		if f.Missing[c] != true {
+		if !f.Missing[c] {
 			*filtered = append(*filtered, c)
 		}
 	}
-
 }
 
 /*
@@ -393,7 +382,6 @@ and i(tl) i(tR) are the left and right impurities.
 Counter is only used for categorical targets and should have the same length as the number of categories in the target.
 */
 func (target *DenseNumFeature) SplitImpurity(l *[]int, r *[]int, m *[]int, allocs *BestSplitAllocs) (impurityDecrease float64) {
-
 	//This code relies on the fact that:
 	// sum((xi-x_mean)^2)
 	//= sum(xi^2) - n * x_mean^2
@@ -490,9 +478,7 @@ func (target *DenseNumFeature) Impurity(cases *[]int, counter *[]int) (e float64
 
 	sum, sum_sqr := target.SumAndSumSquares(cases)
 	e = sum_sqr - sum*sum/float64(len(*cases))
-
 	return
-
 }
 
 // Error returns the  Mean Squared error of the cases specified vs the predicted
@@ -506,11 +492,9 @@ func (target *DenseNumFeature) Error(cases *[]int, predicted float64) (e float64
 			e += d * d
 			n += 1
 		}
-
 	}
 	e = e / float64(n)
 	return
-
 }
 
 // Mean returns the mean of the feature for the cases specified
@@ -522,11 +506,9 @@ func (target *DenseNumFeature) Mean(cases *[]int) (m float64) {
 			m += target.NumData[i]
 			n += 1
 		}
-
 	}
 	m = m / float64(n)
 	return
-
 }
 
 // Mode returns the mode category feature for the cases specified
@@ -536,7 +518,6 @@ func (f *DenseNumFeature) Mode(cases *[]int) (m float64) {
 		if !f.Missing[i] {
 			counts[f.NumData[i]] += 1
 		}
-
 	}
 	max := 0
 	for k, v := range counts {
@@ -546,7 +527,6 @@ func (f *DenseNumFeature) Mode(cases *[]int) (m float64) {
 		}
 	}
 	return
-
 }
 
 // Span returns the lengh along the real line spaned by the specified cases
@@ -569,13 +549,10 @@ func (f *DenseNumFeature) Span(cases *[]int, counter *[]int) (span float64) {
 			case val < min:
 				min = val
 			}
-
 		}
-
 	}
 
 	return max - min
-
 }
 
 // Find predicted takes the indexes of a set of cases and returns the
@@ -587,7 +564,6 @@ func (f *DenseNumFeature) FindPredicted(cases []int) (pred string) {
 		log.Print("NaN predicted with cases ", len(cases))
 	}
 	return
-
 }
 
 // Shuffle does an inplace shuffle of the specified feature
@@ -605,7 +581,6 @@ func (f *DenseNumFeature) Shuffle() {
 		f.NumData[sourcei] = data
 
 	}
-
 }
 
 // ShuffleCases does an inplace shuffle of the specified cases
@@ -613,7 +588,6 @@ func (f *DenseNumFeature) ShuffleCases(cases *[]int, allocs *BestSplitAllocs) {
 	capacity := len(*cases)
 	//shuffle
 	for j := 0; j < capacity; j++ {
-
 		targeti := (*cases)[j]
 		sourcei := (*cases)[j+allocs.Rnd.Intn(capacity-j)]
 		missing := f.Missing[targeti]
@@ -625,7 +599,6 @@ func (f *DenseNumFeature) ShuffleCases(cases *[]int, allocs *BestSplitAllocs) {
 		f.NumData[sourcei] = data
 
 	}
-
 }
 
 /*
@@ -637,7 +610,6 @@ func (f *DenseNumFeature) ShuffledCopy() Feature {
 	fake.Shuffle()
 	fake.(*DenseNumFeature).Name += ":SHUFFLED"
 	return fake
-
 }
 
 /*Copy returns a copy of f.*/
@@ -666,7 +638,7 @@ func (f *DenseNumFeature) CopyInTo(copyf Feature) {
 // ImputeMissing imputes the missing values in a feature to the mean or mode of the feature.
 func (f *DenseNumFeature) ImputeMissing() {
 	cases := make([]int, 0, len(f.Missing))
-	for i, _ := range f.Missing {
+	for i := range f.Missing {
 		cases = append(cases, i)
 	}
 	mean := 0.0
@@ -675,11 +647,8 @@ func (f *DenseNumFeature) ImputeMissing() {
 
 	for i, m := range f.Missing {
 		if m {
-
 			f.NumData[i] = mean
-
 			f.Missing[i] = false
-
 		}
 	}
 	f.HasMissing = false

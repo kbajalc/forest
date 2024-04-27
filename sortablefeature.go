@@ -34,7 +34,6 @@ func (sf *SortableFeature) Len() int {
 func (sf *SortableFeature) Less(i int, j int) bool {
 	v := sf.Vals
 	return v[i] < v[j]
-
 }
 
 // Swap exchanges the ith and jth cases.
@@ -47,7 +46,6 @@ func (sf *SortableFeature) Swap(i int, j int) {
 	w := vs[i]
 	vs[i] = vs[j]
 	vs[j] = w
-
 }
 
 // Load loads the values of the cases into a cache friendly array.

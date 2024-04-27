@@ -65,10 +65,8 @@ func main() {
 				blacklisted += 1
 				blacklistis[i] = true
 			}
-
 		}
 		blackfile.Close()
-
 	}
 
 	newdata := make([]learn.Feature, 0, len(data.Data)-blacklisted)
@@ -102,7 +100,6 @@ func main() {
 			if !(strings.HasPrefix(nf.Name, "C:") || strings.HasPrefix(nf.Name, "B:")) {
 				nf.Name = "C:" + nf.Name
 			}
-
 		}
 	}
 
@@ -120,7 +117,6 @@ func main() {
 	defer outfile.Close()
 
 	if *libsvmtarget == "" {
-
 		err = data.WriteCases(outfile, cases)
 		if err != nil {
 			log.Fatal(err)
@@ -166,7 +162,5 @@ func main() {
 		if err != nil {
 			log.Fatalf("Error writing libsvm:\n%v", err)
 		}
-
 	}
-
 }

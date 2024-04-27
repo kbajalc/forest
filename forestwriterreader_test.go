@@ -7,7 +7,6 @@ import (
 )
 
 func TestFileFormats(t *testing.T) {
-
 	//Write out a fm and read it back in
 	pipereader, pipewriter := io.Pipe()
 	cases := []int{0, 1, 2, 3, 4, 5, 6, 7}
@@ -27,11 +26,10 @@ func TestFileFormats(t *testing.T) {
 	}
 
 	cattarget := fm.Data[1]
-	forest := GrowRandomForest(fm, cattarget.(Feature), candidates, fm.Data[0].Length(), 3, 10, 1, 0, false, false, false, false, nil)
+	forest := GrowRandomForest(fm, cattarget, candidates, fm.Data[0].Length(), 3, 10, 1, 0, false, false, false, false, nil)
 
 	count := 0
 	for _, tree := range forest.Trees {
-
 		tree.Root.Recurse(func(*Node, []int, int) { count++ }, fm, cases, 0)
 
 	}
@@ -73,5 +71,4 @@ func TestFileFormats(t *testing.T) {
 	if score > 0.4 {
 		t.Errorf("Error: Classification of simpledataset from sf file had score: %v", score)
 	}
-
 }

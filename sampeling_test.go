@@ -25,7 +25,6 @@ func TestSampleFirstN(t *testing.T) {
 	if deck[1] != 1 || deck[2] != 2 || deck[3] != 3 {
 		t.Errorf("Sampeling 2 items with 3 constant resulted in %v %v", deck, samples)
 	}
-
 }
 
 var bfm = `.	0	1	2	3	4	5	6	7
@@ -55,15 +54,13 @@ func TestSampeling(t *testing.T) {
 				case1++
 			}
 		}
-		switch bs.(type) {
+		switch s := bs.(type) {
 		case *BalancedSampler:
-			s := bs.(*BalancedSampler)
 			if l := len(s.Cases); l != 2 {
 				t.Errorf("Balanced sampler found %v cases not 2: %v", l, fm.Data[0].(*DenseCatFeature).Back)
 			}
 
 		case *SecondaryBalancedSampler:
-			s := bs.(*SecondaryBalancedSampler)
 			if s.Total != 8 {
 				t.Errorf("SecondaryBalanced sampler found %v total cases not 8", s.Total)
 			}
@@ -77,7 +74,5 @@ func TestSampeling(t *testing.T) {
 		if case0 < 200 || case1 < 200 {
 			t.Errorf("Cases 0 and 1 underprepresented after balanced sampeling from %T.", bs)
 		}
-
 	}
-
 }

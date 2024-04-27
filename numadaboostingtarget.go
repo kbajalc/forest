@@ -18,7 +18,7 @@ func NewNumAdaBoostTarget(f NumFeature) (abt *NumAdaBoostTarget) {
 	nCases := f.Length()
 	abt = &NumAdaBoostTarget{f, make([]float64, nCases), 0.0}
 	cases := make([]int, nCases)
-	for i, _ := range abt.Weights {
+	for i := range abt.Weights {
 		abt.Weights[i] = 1 / float64(nCases)
 		cases[i] = i
 	}
@@ -56,10 +56,9 @@ func (target *NumAdaBoostTarget) Impurity(cases *[]int, counter *[]int) (e float
 	e = 0.0
 	m := target.Predicted(cases)
 	for _, c := range *cases {
-		if target.IsMissing(c) == false {
+		if !target.IsMissing(c) {
 			e += target.Weights[c] * target.Norm(c, m)
 		}
-
 	}
 	return
 }
@@ -97,10 +96,9 @@ func (t *NumAdaBoostTarget) Boost(leaves *[][]int) (weight float64) {
 	for _, cases := range *leaves {
 		m := t.Predicted(&cases)
 		for _, c := range cases {
-			if t.IsMissing(c) == false {
+			if !t.IsMissing(c) {
 				t.Weights[c] = t.Weights[c] * math.Exp(weight*(t.Norm(c, m)-imp))
 			}
-
 		}
 	}
 

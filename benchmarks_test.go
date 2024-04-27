@@ -6,7 +6,6 @@ import (
 )
 
 func BenchmarkIris(b *testing.B) {
-
 	candidates := []int{1, 2, 3, 4}
 	// irisreader := strings.NewReader(irisarff)
 	// fm := ParseARFF(irisreader)
@@ -33,7 +32,6 @@ func BenchmarkIris(b *testing.B) {
 }
 
 func BenchmarkBoston(b *testing.B) {
-
 	boston := strings.NewReader(boston_housing)
 
 	fm := ParseARFF(boston)
@@ -57,7 +55,6 @@ func BenchmarkBoston(b *testing.B) {
 }
 
 func BenchmarkBestNumSplit(b *testing.B) {
-
 	// irisreader := strings.NewReader(irisarff)
 	// fm := ParseARFF(irisreader)
 	// targeti := 4

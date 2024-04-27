@@ -32,11 +32,9 @@ func TestSpareseCounter(t *testing.T) {
 			t.Errorf("Spares counter out put wrong value %v or field %v", r, i)
 		}
 	}
-
 }
 
 func TestParseAsIntOrFractionOfTotal(t *testing.T) {
-
 	if p := ParseAsIntOrFractionOfTotal("70", 100); p != 70 {
 		t.Errorf("ParseAsIntOrFractionOfTotal parsed 70 as %v", p)
 	}
@@ -52,5 +50,4 @@ func TestParseAsIntOrFractionOfTotal(t *testing.T) {
 	if p := ParseAsIntOrFractionOfTotal("blah", 100); p != 0 {
 		t.Errorf("ParseAsIntOrFractionOfTotal parsed blah as %v / 100", p)
 	}
-
 }

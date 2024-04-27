@@ -54,10 +54,8 @@ func (t *Tree) AddNode(path string, pred string, splitter *Splitter) {
 				}
 				loc = loc.Missing
 			}
-
 		}
 	}
-
 }
 
 // StripCodes removes all of the coded splits from a tree so that it can be used on new catagorical data.
@@ -65,7 +63,6 @@ func (t *Tree) StripCodes() {
 	t.Root.Climb(func(n *Node) {
 		if n.CodedSplit != nil {
 			n.CodedSplit = nil
-
 		}
 	})
 }
@@ -107,7 +104,6 @@ func (t *Tree) Grow(fm *FeatureMatrix,
 	importance *[]*RunningMean,
 	depthUsed *[]int,
 	allocs *BestSplitAllocs) {
-
 	//var innercanidates []int
 	var impDec float64
 	// for i := 0; i < len(allocs.Weights); i++ {
@@ -121,7 +117,6 @@ func (t *Tree) Grow(fm *FeatureMatrix,
 	// 	allocs.Weights[i]++
 	// }
 	t.Root.CodedRecurse(func(n *Node, innercases *[]int, depth int, nconstantsbefore int) (fi int, split interface{}, nconstants int) {
-
 		nconstants = nconstantsbefore
 
 		if (depth < maxDepth || maxDepth <= 0) && (2*leafSize) <= len(*innercases) {
@@ -159,7 +154,6 @@ func (t *Tree) Grow(fm *FeatureMatrix,
 				}
 				return
 			}
-
 		}
 		//fmt.Println("Terminating in tree grow.")
 
@@ -189,15 +183,14 @@ func (t *Tree) GrowJungle(fm *FeatureMatrix,
 	importance *[]*RunningMean,
 	depthUsed *[]int,
 	allocs *BestSplitAllocs) {
-
 	//var innercanidates []int
 	var impDec float64
-	nodes := []nodeAndCases{nodeAndCases{t.Root, 0, len(cases), 0, nil, false}}
+	nodes := []nodeAndCases{{t.Root, 0, len(cases), 0, nil, false}}
 	var depth, nconstants, start, end, fi, firstThisLevel int
 	var split interface{}
 
-	innercases := cases[0:len(cases)]
-	innercases2 := cases[0:len(cases)]
+	innercases := cases[0:]
+	innercases2 := cases[0:]
 
 	for {
 		//Extend Nodes
@@ -216,7 +209,6 @@ func (t *Tree) GrowJungle(fm *FeatureMatrix,
 			nconstants = node.nconstants
 
 			if (depth < maxDepth || maxDepth <= 0) && (2*leafSize) <= len(innercases) {
-
 				fi, split, impDec, nconstants = fm.BestSplitter(target, &innercases, &candidates, mTry, &oob, leafSize, force, vet, evaloob, extraRandom, allocs, nconstants)
 
 				if split != nil {
@@ -262,7 +254,6 @@ func (t *Tree) GrowJungle(fm *FeatureMatrix,
 			n.Splitter = nil
 			n.Pred = target.FindPredicted(innercases)
 			continue
-
 		}
 
 		if len(nodes) == lastThisLevel {
@@ -328,7 +319,6 @@ func (t *Tree) GrowJungle(fm *FeatureMatrix,
 
 		depth++
 	}
-
 }
 
 // GetLeaves is called by the leaf count utility to
@@ -352,10 +342,8 @@ func (t *Tree) GetLeaves(fm *FeatureMatrix, fbycase *SparseCounter) []Leaf {
 				fbycase.Add(c, fm.Map[n.Splitter.Feature], 1)
 			}
 		}
-
 	}, fm, cases, 0)
 	return leaves
-
 }
 
 // Partition partitions all of the cases in a FeatureMatrix.
@@ -373,10 +361,8 @@ func (t *Tree) Partition(fm *FeatureMatrix) (*[][]int, *[]string) {
 			leaves = append(leaves, cases)
 			preds = append(preds, n.Pred)
 		}
-
 	}, fm, cases, 0)
 	return &leaves, &preds
-
 }
 
 // Leaf is a struct for storing the index of the cases at a terminal "Leaf" node
@@ -403,7 +389,6 @@ func (t *Tree) Vote(fm *FeatureMatrix, bb VoteTallyer) {
 // into bb *BallotBox. Since BallotBox is not thread safe trees should not vote
 // into the same BallotBox in parallel.
 func (t *Tree) VoteCases(fm *FeatureMatrix, bb VoteTallyer, cases []int) {
-
 	weight := 1.0
 	if t.Weight >= 0.0 {
 		weight = t.Weight

@@ -14,15 +14,14 @@ import (
 // FeatureMatrix contains a slice of Features and a Map to look of the index of a feature
 // by its string id.
 type FeatureMatrix struct {
-	Data       []Feature
-	Map        map[string]int
-	CaseLabels []string
+	Data  []Feature
+	Map   map[string]int
+	Cases []string
 }
 
 func (fm *FeatureMatrix) StripStrings(target string) {
-
-	for i := range fm.CaseLabels {
-		fm.CaseLabels[i] = fmt.Sprintf("%v", i)
+	for i := range fm.Cases {
+		fm.Cases[i] = fmt.Sprintf("%v", i)
 	}
 
 	for i, f := range fm.Data {
@@ -31,47 +30,43 @@ func (fm *FeatureMatrix) StripStrings(target string) {
 			fm.Data[0] = f
 			break
 		}
-
 	}
 
 	fm.Map = make(map[string]int)
 
 	for i, f := range fm.Data {
-
-		switch f.(type) {
+		switch t := f.(type) {
 		case *DenseNumFeature:
 			name := fmt.Sprintf("N:%v", i)
 			fm.Map[name] = i
-			f.(*DenseNumFeature).Name = name
+			t.Name = name
 		case *DenseCatFeature:
 			name := fmt.Sprintf("C:%v", i)
 			fm.Map[name] = i
-			f.(*DenseCatFeature).Name = name
-			f.(*DenseCatFeature).Map = make(map[string]int)
-			for j, v := range f.(*DenseCatFeature).Back {
+			t.Name = name
+			t.Map = make(map[string]int)
+			for j, v := range t.Back {
 				v = fmt.Sprintf("%v", j)
-				f.(*DenseCatFeature).Back[j] = v
-				f.(*DenseCatFeature).Map[v] = i
+				t.Back[j] = v
+				t.Map[v] = i
 
 			}
-
 		}
 	}
-	return
 }
 
 func (fm *FeatureMatrix) EncodeToNum() *FeatureMatrix {
 	out := &FeatureMatrix{make([]Feature, 0, len(fm.Data)),
 		make(map[string]int),
-		fm.CaseLabels}
+		fm.Cases}
 
 	for _, f := range fm.Data {
-		switch f.(type) {
+		switch t := f.(type) {
 		case NumFeature:
-			out.Map[f.GetName()] = len(out.Map)
+			out.Map[t.GetName()] = len(out.Map)
 			out.Data = append(out.Data, f)
 		case CatFeature:
-			fns := f.(CatFeature).EncodeToNum()
+			fns := t.EncodeToNum()
 			for _, fn := range fns {
 				out.Map[fn.GetName()] = len(out.Map)
 				out.Data = append(out.Data, fn)
@@ -84,15 +79,15 @@ func (fm *FeatureMatrix) EncodeToNum() *FeatureMatrix {
 func (fm *FeatureMatrix) OneHot() *FeatureMatrix {
 	out := &FeatureMatrix{make([]Feature, 0, len(fm.Data)),
 		make(map[string]int),
-		fm.CaseLabels}
+		fm.Cases}
 
 	for _, f := range fm.Data {
-		switch f.(type) {
+		switch t := f.(type) {
 		case NumFeature:
-			out.Map[f.GetName()] = len(out.Map)
+			out.Map[t.GetName()] = len(out.Map)
 			out.Data = append(out.Data, f)
 		case CatFeature:
-			fns := f.(CatFeature).OneHot()
+			fns := t.OneHot()
 			for _, fn := range fns {
 				out.Map[fn.GetName()] = len(out.Map)
 				out.Data = append(out.Data, fn)
@@ -109,7 +104,7 @@ func (fm *FeatureMatrix) WriteCases(w io.Writer, cases []int) (err error) {
 	//print header
 	vals = append(vals, ".")
 	for i := 0; i < len(cases); i++ {
-		vals = append(vals, fm.CaseLabels[cases[i]])
+		vals = append(vals, fm.Cases[cases[i]])
 	}
 	_, err = fmt.Fprintln(w, strings.Join(vals, "\t"))
 	if err != nil {
@@ -127,11 +122,8 @@ func (fm *FeatureMatrix) WriteCases(w io.Writer, cases []int) (err error) {
 		if err != nil {
 			return
 		}
-
 	}
-
 	return
-
 }
 
 /*
@@ -188,7 +180,6 @@ func (fm *FeatureMatrix) BestSplitter(target Target,
 	//haven't looked at at least one non constant feature
 	//haven't looked at mTry features
 	for j := 0; (force && j >= mTry && j <= nDrawnConstants) || j < mTry; j++ {
-
 		//Break early if there aren't any more nonconstant features
 		if nConstants >= lcans {
 			return
@@ -196,7 +187,6 @@ func (fm *FeatureMatrix) BestSplitter(target Target,
 
 		//make sure there isn't only one non constant left to draw
 		if lcans > nDrawnConstants+lastSample {
-
 			randi = lastSample
 			randi += allocs.Rnd.Intn(lcans - nDrawnConstants - lastSample)
 			//randi = lastSample + rand.Intn(nnonconstant-lastSample)
@@ -208,7 +198,6 @@ func (fm *FeatureMatrix) BestSplitter(target Target,
 			swap = cans[randi]
 			cans[randi] = cans[lastSample]
 			cans[lastSample] = swap
-
 		}
 		i := cans[lastSample]
 
@@ -244,7 +233,6 @@ func (fm *FeatureMatrix) BestSplitter(target Target,
 			impurityDecrease = inerImp
 			bestSplit = split
 		}
-
 	}
 
 	// if impurityDecrease <= minImp {
@@ -266,15 +254,11 @@ actual features.
 func (fm *FeatureMatrix) AddContrasts(n int) {
 	nrealfeatures := len(fm.Data)
 	for i := 0; i < n; i++ {
-
 		//generate a shuffled copy
 		orig := fm.Data[rand.Intn(nrealfeatures)]
 		fake := orig.ShuffledCopy()
-
 		fm.Map[fake.GetName()] = len(fm.Data)
-
 		fm.Data = append(fm.Data, fake)
-
 	}
 }
 
@@ -290,13 +274,9 @@ identify [pseudo] unique identifiers that might lead to over fitting.
 func (fm *FeatureMatrix) ContrastAll() {
 	nrealfeatures := len(fm.Data)
 	for i := 0; i < nrealfeatures; i++ {
-
 		fake := fm.Data[i].ShuffledCopy()
-
 		fm.Map[fake.GetName()] = len(fm.Data)
-
 		fm.Data = append(fm.Data, fake)
-
 	}
 }
 
@@ -329,7 +309,7 @@ func (fm *FeatureMatrix) LoadCases(data *csv.Reader, rowlabels bool) {
 			caselabel = record[0]
 			record = record[1:]
 		}
-		fm.CaseLabels = append(fm.CaseLabels, caselabel)
+		fm.Cases = append(fm.Cases, caselabel)
 
 		for i, v := range record {
 			fm.Data[i].Append(v)
@@ -337,7 +317,6 @@ func (fm *FeatureMatrix) LoadCases(data *csv.Reader, rowlabels bool) {
 
 		count++
 	}
-
 }
 
 // Parse an AFM (annotated feature matrix) out of an io.Reader
@@ -366,25 +345,27 @@ func ParseAFM(input io.Reader) *FeatureMatrix {
 			for i, label := range headers {
 				if label[:2] == "N:" {
 					data = append(data, &DenseNumFeature{
-						make([]float64, 0, 0),
-						make([]bool, 0, 0),
-						label,
-						false})
-				} else {
+						NumData:    make([]float64, 0),
+						Missing:    make([]bool, 0),
+						Name:       label,
+						HasMissing: false,
+					})
+				} else if label[:2] == "C:" || label[:2] == "B:" {
 					data = append(data, &DenseCatFeature{
-						&CatMap{make(map[string]int, 0),
-							make([]string, 0, 0)},
-						make([]int, 0, 0),
-						make([]bool, 0, 0),
-						label,
-						false,
-						false})
+						CatMap:       &CatMap{make(map[string]int, 0), make([]string, 0)},
+						CatData:      make([]int, 0),
+						Missing:      make([]bool, 0),
+						Name:         label,
+						RandomSearch: false,
+						HasMissing:   false,
+					})
+				} else {
+					continue
 				}
 				lookup[label] = i
-
 			}
 
-			fm := &FeatureMatrix{data, lookup, make([]string, 0, 0)}
+			fm := &FeatureMatrix{data, lookup, make([]string, 0)}
 			fm.LoadCases(tsv, true)
 			return fm
 		}
@@ -400,7 +381,11 @@ func ParseAFM(input io.Reader) *FeatureMatrix {
 			log.Print("Error:", err)
 			break
 		}
-		data = append(data, ParseFeature(record))
+		f := ParseFeature(record)
+		if f == nil {
+			continue
+		}
+		data = append(data, f)
 		lookup[record[0]] = count
 		count++
 	}
@@ -409,7 +394,6 @@ func ParseAFM(input io.Reader) *FeatureMatrix {
 
 // LoadAFM loads a, possible zipped, FeatureMatrix specified by filename
 func LoadAFM(filename string) (fm *FeatureMatrix, err error) {
-
 	r, err := zip.OpenReader(filename)
 	if err == nil {
 		rc, err := r.File[0].Open()
@@ -449,33 +433,29 @@ func ParseFeature(record []string) Feature {
 	switch record[0][0:2] {
 	case "N:":
 		f := &DenseNumFeature{
-			nil,
-			make([]bool, 0, capacity),
-			record[0],
-			false}
-		f.NumData = make([]float64, 0, capacity)
-
+			NumData:    make([]float64, 0, capacity),
+			Missing:    make([]bool, 0, capacity),
+			Name:       record[0],
+			HasMissing: false,
+		}
 		for i := 1; i < len(record); i++ {
 			f.Append(record[i])
-
 		}
 		return f
-
-	default:
+	case "B:", "C:":
 		f := &DenseCatFeature{
-			&CatMap{make(map[string]int, 0),
-				make([]string, 0, 0)},
-			nil,
-			make([]bool, 0, capacity),
-			record[0],
-			false,
-			false}
-		f.CatData = make([]int, 0, capacity)
+			CatMap:       &CatMap{make(map[string]int, 0), make([]string, 0)},
+			CatData:      make([]int, 0, capacity),
+			Missing:      make([]bool, 0, capacity),
+			Name:         record[0],
+			RandomSearch: false,
+			HasMissing:   false,
+		}
 		for i := 1; i < len(record); i++ {
 			f.Append(record[i])
-
 		}
 		return f
+	default:
+		return nil
 	}
-
 }

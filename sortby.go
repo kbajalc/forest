@@ -32,7 +32,6 @@ func swap(cases *[]int, vals *[]float64, i int, j int) {
 	w := vs[i]
 	vs[i] = vs[j]
 	vs[j] = w
-
 }
 
 func quickSort(cases *[]int, vals *[]float64, a, b, maxDepth int) {
@@ -91,7 +90,6 @@ func doPivot(cases *[]int, vals *[]float64, lo, hi int) (midlo, midhi int) {
 			if swapf < pivotv {
 				b++
 			} else if pivotv == swapf {
-
 				vs[b] = vs[a]
 				vs[a] = swapf
 
@@ -109,7 +107,6 @@ func doPivot(cases *[]int, vals *[]float64, lo, hi int) (midlo, midhi int) {
 			c--
 			swapf = vs[c]
 			if pivotv < swapf {
-
 			} else if swapf == pivotv {
 				d--
 				vs[c] = vs[d]
@@ -160,7 +157,6 @@ func doPivot(cases *[]int, vals *[]float64, lo, hi int) (midlo, midhi int) {
 	a2 := lo
 	b2 := b - n
 	for i := 0; i < n; i++ {
-
 		swapf = vs[a2]
 		vs[a2] = vs[b2]
 		vs[b2] = swapf
@@ -178,7 +174,6 @@ func doPivot(cases *[]int, vals *[]float64, lo, hi int) (midlo, midhi int) {
 	a2 = c
 	b2 = hi - n
 	for i := 0; i < n; i++ {
-
 		swapf = vs[a2]
 		vs[a2] = vs[b2]
 		vs[b2] = swapf

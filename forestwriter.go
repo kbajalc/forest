@@ -59,7 +59,6 @@ func (fw *ForestWriter) WriteForestHeader(nforest int, target string, intercept 
 // WriteNodeAndChildren recursively writes out the target node and all of its children.
 // WriteTree is preferred for most use cases.
 func (fw *ForestWriter) WriteNodeAndChildren(n *Node, path string) {
-
 	fw.WriteNode(n, path)
 	if n.Splitter != nil && n.Left != nil {
 		fw.WriteNodeAndChildren(n.Left, path+"L")
@@ -70,7 +69,6 @@ func (fw *ForestWriter) WriteNodeAndChildren(n *Node, path string) {
 	if n.Splitter != nil && n.Missing != nil {
 		fw.WriteNodeAndChildren(n.Right, path+"M")
 	}
-
 }
 
 // WriteNode writes a single node but not it's children. WriteTree will be used more

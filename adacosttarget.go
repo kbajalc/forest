@@ -68,7 +68,6 @@ func (target *AdaCostTarget) UpdateSImpFromAllocs(l *[]int, r *[]int, m *[]int, 
 	lcounter := *allocs.LCounter
 	rcounter := *allocs.RCounter
 	for _, i = range *movedRtoL {
-
 		//most expensive statement:
 		cat = target.Geti(i)
 		lcounter[cat]++
@@ -104,7 +103,6 @@ func (target *AdaCostTarget) Impurity(cases *[]int, counter *[]int) (e float64) 
 
 // ImpFromCounts recalculates gini impurity from class counts for us in intertive updates.
 func (target *AdaCostTarget) ImpFromCounts(cases *[]int, counter *[]int) (e float64) {
-
 	var m, mc int
 
 	for i, c := range *counter {
@@ -115,16 +113,13 @@ func (target *AdaCostTarget) ImpFromCounts(cases *[]int, counter *[]int) (e floa
 	}
 
 	for _, c := range *cases {
-
 		cat := target.Geti(c)
 		if cat != m {
 			e += target.Weights[c] * target.Costs[cat]
 		}
-
 	}
 
 	return
-
 }
 
 // Boost performs categorical adaptive boosting using the specified partition and
@@ -152,7 +147,7 @@ func (t *AdaCostTarget) Boost(leaves *[][]int) (weight float64) {
 		}
 
 		for _, c := range cases {
-			if t.IsMissing(c) == false {
+			if !t.IsMissing(c) {
 				cat := t.Geti(c)
 				//CHANGE from adaboost:
 				if cat != m {
@@ -161,7 +156,6 @@ func (t *AdaCostTarget) Boost(leaves *[][]int) (weight float64) {
 					t.Weights[c] = t.Weights[c] * math.Exp(-weight) * t.Costs[cat]
 				}
 			}
-
 		}
 	}
 	normfactor := 0.0

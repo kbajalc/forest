@@ -51,7 +51,6 @@ func TestBestSplitter(t *testing.T) {
 	}
 
 	for i := 0; i < 7; i++ {
-
 		candidates = []int{1, 2, 3, 4, 5, 6, 7}
 
 		fi, split, impDec, nconstants = fm.BestSplitter(target, cases, &candidates, 1, nil, 1, true, false, false, false, allocs, i)

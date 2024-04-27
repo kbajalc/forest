@@ -12,7 +12,6 @@ import (
 )
 
 func openfiles(trainfn string, testfn string) (trainW io.WriteCloser, testW io.WriteCloser) {
-
 	trainfo, err := os.Create(trainfn)
 	if err != nil {
 		log.Fatal(err)
@@ -39,7 +38,6 @@ func openfiles(trainfn string, testfn string) (trainW io.WriteCloser, testW io.W
 	// }
 
 	return
-
 }
 
 func main() {
@@ -122,10 +120,8 @@ func main() {
 				blacklisted += 1
 				blacklistis[i] = true
 			}
-
 		}
 		blackfile.Close()
-
 	}
 
 	newdata := make([]learn.Feature, 0, len(data.Data)-blacklisted)
@@ -158,8 +154,8 @@ func main() {
 
 	foldis := make([][]int, 0, folds)
 
-	foldsize := len(data.CaseLabels) / folds
-	fmt.Printf("%v cases, foldsize %v\n", len(data.CaseLabels), foldsize)
+	foldsize := len(data.Cases) / folds
+	fmt.Printf("%v cases, foldsize %v\n", len(data.Cases), foldsize)
 	for i := 0; i < folds; i++ {
 		foldis = append(foldis, make([]int, 0, foldsize))
 	}
@@ -183,7 +179,7 @@ func main() {
 		}
 	}
 	if unstratified {
-		ncases := len(data.CaseLabels)
+		ncases := len(data.Cases)
 		cases := make([]int, ncases, ncases)
 		for i := 0; i < ncases; i++ {
 			cases[i] = i
@@ -194,7 +190,6 @@ func main() {
 				foldis[j] = append(foldis[j], cases[k])
 			}
 		}
-
 	} else {
 		//sample folds stratified by case
 		fmt.Printf("Stratifying by %v classes.\n", targetf.(*learn.DenseCatFeature).NCats())
@@ -213,7 +208,6 @@ func main() {
 
 				}
 			}
-
 		}
 	}
 	encode := false
@@ -232,7 +226,6 @@ func main() {
 	trainis := make([]int, 0, foldsize*(folds-1))
 	//Write training and testing matrixes
 	for i := 0; i < folds; i++ {
-
 		trainfn := fmt.Sprintf(*train, i)
 		testfn := fmt.Sprintf(*test, i)
 
@@ -263,5 +256,4 @@ func main() {
 
 		fmt.Printf("Wrote fold %v. %v testing cases and %v training cases.\n", i, len(foldis[i]), len(trainis))
 	}
-
 }

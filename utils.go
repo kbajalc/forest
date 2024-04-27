@@ -13,7 +13,6 @@ import (
 func ParseFloat(s string) float64 {
 	frac, _ := strconv.ParseFloat(s, 64)
 	return frac
-
 }
 
 // RunningMean is a thread safe strut for keeping track of running means as used in
@@ -44,7 +43,6 @@ func (rm *RunningMean) WeightedAdd(val float64, weight float64) {
 
 		rm.mutex.Unlock()
 	}
-
 }
 
 // Read reads the mean and count
@@ -64,7 +62,6 @@ func NewRunningMeans(size int) *[]*RunningMean {
 		importance = append(importance, rm)
 	}
 	return &importance
-
 }
 
 // SparseCounter uses maps to track sparse integer counts in large matrix.
@@ -89,7 +86,6 @@ func (sc *SparseCounter) Add(i int, j int, val int) {
 		sc.Map[i][j] = 0
 	}
 	sc.Map[i][j] = sc.Map[i][j] + val
-
 }
 
 // WriteTsv writes the non zero counts out into a three column tsv containing i, j, and
@@ -104,7 +100,6 @@ func (sc *SparseCounter) WriteTsv(writer io.Writer) {
 			}
 		}
 	}
-
 }
 
 /*
@@ -133,7 +128,6 @@ func ParseAsIntOrFractionOfTotal(term string, total int) (parsed int) {
 		} else {
 			parsed = int(count)
 		}
-
 	}
 	return
 }

@@ -66,7 +66,6 @@ func (target *NPTarget) UpdateSImpFromAllocs(l *[]int, r *[]int, m *[]int, alloc
 	lcounter := *allocs.LCounter
 	rcounter := *allocs.RCounter
 	for _, i = range *movedRtoL {
-
 		//most expensive statement:
 		cat = target.Geti(i)
 		lcounter[cat]++
@@ -92,7 +91,6 @@ func (target *NPTarget) UpdateSImpFromAllocs(l *[]int, r *[]int, m *[]int, alloc
 // FindPredicted does a mode calulation with the count of the positive/constrained
 // class corrected.
 func (target *NPTarget) FindPredicted(cases []int) (pred string) {
-
 	mi := 0
 	mc := 0.0
 	counts := make([]int, target.NCats())
@@ -111,12 +109,10 @@ func (target *NPTarget) FindPredicted(cases []int) (pred string) {
 	}
 
 	return target.NumToCat(mi)
-
 }
 
 // ImpFromCounts recalculates gini impurity from class counts for us in intertive updates.
 func (target *NPTarget) ImpFromCounts(t int, counter *[]int) (e float64) {
-
 	var totalpos, totalneg, mi int
 
 	mc := 0.0
@@ -134,7 +130,6 @@ func (target *NPTarget) ImpFromCounts(t int, counter *[]int) (e float64) {
 			mi = cat
 			mc = cc
 		}
-
 	}
 
 	if target.Posi == mi {
@@ -146,17 +141,14 @@ func (target *NPTarget) ImpFromCounts(t int, counter *[]int) (e float64) {
 	}
 
 	return
-
 }
 
 // NPTarget.Impurity implements an impurity that minimizes false negatives subject
 // to a soft constrain on fale positives.
 func (target *NPTarget) Impurity(cases *[]int, counter *[]int) (e float64) {
-
 	target.CountPerCat(cases, counter)
 	t := len(*cases)
 	e = target.ImpFromCounts(t, counter)
 
 	return
-
 }
