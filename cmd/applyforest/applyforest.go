@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	CloudForest "ecg.mk/learn"
+	"ecg.mk/learn"
 )
 
 func main() {
@@ -31,7 +31,7 @@ func main() {
 	flag.Parse()
 
 	//Parse Data
-	data, err := CloudForest.LoadAFM(*fm)
+	data, err := learn.LoadAFM(*fm)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -41,7 +41,7 @@ func main() {
 		log.Fatal(err)
 	}
 	defer forestfile.Close()
-	forestreader := CloudForest.NewForestReader(forestfile)
+	forestreader := learn.NewForestReader(forestfile)
 	forest, err := forestreader.ReadForest()
 	if err != nil {
 		log.Fatal(err)
@@ -56,16 +56,16 @@ func main() {
 		defer predfile.Close()
 	}
 
-	var bb CloudForest.VoteTallyer
+	var bb learn.VoteTallyer
 	switch {
 	case sum:
-		bb = CloudForest.NewSumBallotBox(data.Data[0].Length())
+		bb = learn.NewSumBallotBox(data.Data[0].Length())
 
 	case !cat && (num || strings.HasPrefix(forest.Target, "N")):
-		bb = CloudForest.NewNumBallotBox(data.Data[0].Length())
+		bb = learn.NewNumBallotBox(data.Data[0].Length())
 
 	default:
-		bb = CloudForest.NewCatBallotBox(data.Data[0].Length())
+		bb = learn.NewCatBallotBox(data.Data[0].Length())
 	}
 
 	for _, tree := range forest.Trees {
@@ -91,12 +91,12 @@ func main() {
 			if sum || forest.Intercept != 0.0 {
 				numresult := 0.0
 				if sum {
-					numresult = bb.(*CloudForest.SumBallotBox).TallyNum(i) + forest.Intercept
+					numresult = bb.(*learn.SumBallotBox).TallyNum(i) + forest.Intercept
 				} else {
-					numresult = bb.(*CloudForest.NumBallotBox).TallyNum(i) + forest.Intercept
+					numresult = bb.(*learn.NumBallotBox).TallyNum(i) + forest.Intercept
 				}
 				if expit {
-					numresult = CloudForest.Expit(numresult)
+					numresult = learn.Expit(numresult)
 				}
 				result = fmt.Sprintf("%v", numresult)
 
@@ -110,7 +110,7 @@ func main() {
 	//Not thread safe code!
 	if *votefn != "" {
 		fmt.Printf("Outputting vote totals to %v\n", *votefn)
-		cbb := bb.(*CloudForest.CatBallotBox)
+		cbb := bb.(*learn.CatBallotBox)
 		votefile, err := os.Create(*votefn)
 		if err != nil {
 			log.Fatal(err)

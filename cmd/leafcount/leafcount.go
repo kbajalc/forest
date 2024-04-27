@@ -9,7 +9,7 @@ import (
 	"runtime"
 	"strings"
 
-	CloudForest "ecg.mk/learn"
+	"ecg.mk/learn"
 )
 
 func main() {
@@ -26,17 +26,17 @@ func main() {
 	splits := make(map[string][]string)
 
 	//Parse Data
-	data, err := CloudForest.LoadAFM(*fm)
+	data, err := learn.LoadAFM(*fm)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	log.Print("Data file ", len(data.Data), " by ", data.Data[0].Length())
 
-	counts := new(CloudForest.SparseCounter)
-	var caseFeatureCounts *CloudForest.SparseCounter
+	counts := new(learn.SparseCounter)
+	var caseFeatureCounts *learn.SparseCounter
 	if *boutf != "" {
-		caseFeatureCounts = new(CloudForest.SparseCounter)
+		caseFeatureCounts = new(learn.SparseCounter)
 	}
 
 	files := strings.Split(*rf, ",")
@@ -63,7 +63,7 @@ func main() {
 					log.Fatal(err)
 				}
 				defer forestfile.Close()
-				forestreader := CloudForest.NewForestReader(forestfile)
+				forestreader := learn.NewForestReader(forestfile)
 				forest, err := forestreader.ReadForest()
 				if err != nil {
 					log.Fatal(err)
@@ -84,7 +84,7 @@ func main() {
 					}
 
 					if *soutf != "" {
-						forest.Trees[i].Root.Climb(func(n *CloudForest.Node) {
+						forest.Trees[i].Root.Climb(func(n *learn.Node) {
 							if n.Splitter != nil {
 								name := n.Splitter.Feature
 								_, ok := splits[name]

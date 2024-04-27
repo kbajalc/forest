@@ -67,8 +67,8 @@ class CFClassifier:
 	def fit(self, X, y):
 		df = pd.DataFrame(X).copy()
 		target = "%(uuid)s.target"%{"uuid":self.uuid}
-		fn = "%(uuid)s.train.cloudforest.arff"%{"uuid":self.uuid}
-		self.forest = "%(uuid)s.forest.cloudforest.sf"%{"uuid":self.uuid}
+		fn = "%(uuid)s.train.learn.arff"%{"uuid":self.uuid}
+		self.forest = "%(uuid)s.forest.learn.sf"%{"uuid":self.uuid}
 
 		
 		self.unique = np.unique(y)
@@ -93,8 +93,8 @@ class CFClassifier:
 
 	def predict(self, X):
 		df = pd.DataFrame(X)
-		fn = "%(uuid)s.test.cloudforest.arff"%{"uuid":self.uuid}
-		preds = "%(uuid)s.preds.cloudforest.tsv"%{"uuid":self.uuid}
+		fn = "%(uuid)s.test.learn.arff"%{"uuid":self.uuid}
+		preds = "%(uuid)s.preds.learn.tsv"%{"uuid":self.uuid}
 		
 		fo = open(fn,"w")
 		writearff(fo,df)
@@ -117,8 +117,8 @@ class CFClassifier:
 
 	def predict_proba(self, X):
 		df = pd.DataFrame(X)
-		fn = "%(uuid)s.test.cloudforest.arff"%{"uuid":self.uuid}
-		votes = "%(uuid)s.votes.cloudforest.tsv"%{"uuid":self.uuid}
+		fn = "%(uuid)s.test.learn.arff"%{"uuid":self.uuid}
+		votes = "%(uuid)s.votes.learn.tsv"%{"uuid":self.uuid}
 		
 		
 		fo = open(fn,"w")

@@ -2,13 +2,13 @@
 Package stats currentelly only implements a welch's t-test for importance score analysis
 in CloudForest.
 */
-package stats
+package learn
 
 import (
 	"math"
 )
 
-//MeanAndVar returns the sample mean, variance and count as float64's.
+// MeanAndVar returns the sample mean, variance and count as float64's.
 func MeanAndVar(X *[]float64) (m, v, n float64) {
 	for _, x := range *X {
 		m += x
@@ -21,9 +21,9 @@ func MeanAndVar(X *[]float64) (m, v, n float64) {
 	return
 }
 
-//Ttest performs a Welch's t test and returns p-value, t-value and the degrees of freedom.
-//The p value based on the hypothesis that mean(B)>mean(A).
-//Based on similar code in rf-ace (Apache 2.0, Timo Erkkilä)
+// Ttest performs a Welch's t test and returns p-value, t-value and the degrees of freedom.
+// The p value based on the hypothesis that mean(B)>mean(A).
+// Based on similar code in rf-ace (Apache 2.0, Timo Erkkilä)
 func Ttest(A, B *[]float64) (p, t, v, am float64) {
 
 	// Calculate means and variances for each of two samples.
@@ -73,7 +73,7 @@ func Ttest(A, B *[]float64) (p, t, v, am float64) {
 	return
 }
 
-//Based on similar code in rf-ace (Apache 2.0, Timo Erkkilä)
+// Based on similar code in rf-ace (Apache 2.0, Timo Erkkilä)
 func regularizedIncompleteBeta(x, a, b float64) float64 {
 	i := 50
 	continuedFraction := 1.0
@@ -88,9 +88,9 @@ func regularizedIncompleteBeta(x, a, b float64) float64 {
 }
 
 /*
-  Even and odd factors for the infinite continued fraction representation of the
-  regularized incomplete beta function.
-  Based on similar code in rf-ace (Apache 2.0, Timo Erkkilä)
+Even and odd factors for the infinite continued fraction representation of the
+regularized incomplete beta function.
+Based on similar code in rf-ace (Apache 2.0, Timo Erkkilä)
 */
 func dO(m, x, a, b float64) float64 {
 	return (-1.0 * (a + m) * (a + b + m) * x / ((a + 2*m) * (a + 2*m + 1)))
@@ -100,14 +100,14 @@ func dE(m, x, a, b float64) float64 {
 	return (m * (b - m) * x / ((a + 2*m - 1) * (a + 2*m)))
 }
 
-//Based on similar code in rf-ace (Apache 2.0, Timo Erkkilä)
+// Based on similar code in rf-ace (Apache 2.0, Timo Erkkilä)
 func lgamma(x float64) float64 {
 	v, _ := math.Lgamma(x)
 	//v := math.Log(math.Abs(math.Gamma(x)))
 	return v
 }
 
-//Based on similar code in rf-ace (Apache 2.0, Timo Erkkilä)
+// Based on similar code in rf-ace (Apache 2.0, Timo Erkkilä)
 func beta(a, b float64) float64 {
 	return (math.Exp(lgamma(a) + lgamma(b) - lgamma(a+b)))
 }

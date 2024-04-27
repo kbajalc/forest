@@ -16,8 +16,7 @@ import (
 	"sync"
 	"time"
 
-	CloudForest "ecg.mk/learn"
-	"ecg.mk/learn/stats"
+	"ecg.mk/learn"
 )
 
 func main() {
@@ -214,7 +213,7 @@ func main() {
 	fmt.Printf("nTrees : %v\n", nTrees)
 	//Parse Data
 	fmt.Printf("Loading data from: %v\n", *fm)
-	data, err := CloudForest.LoadAFM(*fm)
+	data, err := learn.LoadAFM(*fm)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -308,7 +307,7 @@ func main() {
 	nFeatures := len(data.Data) - blacklisted - 1
 	fmt.Printf("Non Target Features : %v\n", nFeatures)
 
-	mTry := CloudForest.ParseAsIntOrFractionOfTotal(StringmTry, nFeatures)
+	mTry := learn.ParseAsIntOrFractionOfTotal(StringmTry, nFeatures)
 	if mTry <= 0 {
 
 		mTry = int(math.Ceil(math.Sqrt(float64(nFeatures))))
@@ -342,13 +341,13 @@ func main() {
 	targetf := data.Data[targeti]
 	unboostedTarget := targetf.Copy()
 
-	var bSampler CloudForest.Bagger
+	var bSampler learn.Bagger
 	if balance {
-		bSampler = CloudForest.NewBalancedSampler(targetf.(*CloudForest.DenseCatFeature))
+		bSampler = learn.NewBalancedSampler(targetf.(*learn.DenseCatFeature))
 	}
 
 	if balanceby != "" {
-		bSampler = CloudForest.NewSecondaryBalancedSampler(targetf.(*CloudForest.DenseCatFeature), data.Data[data.Map[balanceby]].(*CloudForest.DenseCatFeature))
+		bSampler = learn.NewSecondaryBalancedSampler(targetf.(*learn.DenseCatFeature), data.Data[data.Map[balanceby]].(*learn.DenseCatFeature))
 		balance = true
 
 	}
@@ -363,7 +362,7 @@ func main() {
 	}
 	fmt.Printf("non-missing cases: %v\n", nNonMissing)
 
-	leafSize := CloudForest.ParseAsIntOrFractionOfTotal(StringleafSize, nNonMissing)
+	leafSize := learn.ParseAsIntOrFractionOfTotal(StringleafSize, nNonMissing)
 
 	if leafSize <= 0 {
 		if boost {
@@ -379,7 +378,7 @@ func main() {
 	fmt.Printf("leafSize : %v\n", leafSize)
 
 	//infer nSamples and mTry from data if they are 0
-	nSamples := CloudForest.ParseAsIntOrFractionOfTotal(StringnSamples, nNonMissing)
+	nSamples := learn.ParseAsIntOrFractionOfTotal(StringnSamples, nNonMissing)
 	if nSamples <= 0 {
 		nSamples = nNonMissing
 	}
@@ -391,55 +390,55 @@ func main() {
 	if caseoob != "" {
 		oob = true
 	}
-	var oobVotes CloudForest.VoteTallyer
+	var oobVotes learn.VoteTallyer
 	if oob {
 		fmt.Println("Recording oob error.")
 		if targetf.NCats() == 0 {
 			//regression
-			oobVotes = CloudForest.NewNumBallotBox(data.Data[0].Length())
+			oobVotes = learn.NewNumBallotBox(data.Data[0].Length())
 		} else {
 			//classification
-			oobVotes = CloudForest.NewCatBallotBox(data.Data[0].Length())
+			oobVotes = learn.NewCatBallotBox(data.Data[0].Length())
 		}
 	}
 
 	//****** Set up Target for Alternative Impurity  if needed *******//
-	var target CloudForest.Target
+	var target learn.Target
 	if density {
 		fmt.Println("Estimating Density.")
-		target = &CloudForest.DensityTarget{&data.Data, nNonMissing}
+		target = &learn.DensityTarget{&data.Data, nNonMissing}
 	} else {
 
 		switch targetf.(type) {
 
-		case CloudForest.NumFeature:
+		case learn.NumFeature:
 			fmt.Println("Performing regression.")
 			if l1 {
 				fmt.Println("Using l1/absolute deviance error.")
-				targetf = &CloudForest.L1Target{targetf.(CloudForest.NumFeature)}
+				targetf = &learn.L1Target{targetf.(learn.NumFeature)}
 			}
 			if ordinal {
 				fmt.Println("Using Ordinal (mode) prediction.")
-				targetf = CloudForest.NewOrdinalTarget(targetf.(CloudForest.NumFeature))
+				targetf = learn.NewOrdinalTarget(targetf.(learn.NumFeature))
 			}
 			switch {
 			case gradboost != 0.0:
 				fmt.Println("Using Gradient Boosting.")
-				targetf = CloudForest.NewGradBoostTarget(targetf.(CloudForest.NumFeature), gradboost)
+				targetf = learn.NewGradBoostTarget(targetf.(learn.NumFeature), gradboost)
 
 			case adaboost:
 				fmt.Println("Using Numeric Adaptive Boosting.")
-				targetf = CloudForest.NewNumAdaBoostTarget(targetf.(CloudForest.NumFeature))
+				targetf = learn.NewNumAdaBoostTarget(targetf.(learn.NumFeature))
 			}
 			target = targetf
 
-		case CloudForest.CatFeature:
+		case learn.CatFeature:
 			fmt.Printf("Performing classification with %v categories.\n", targetf.NCats())
 			switch {
 			case NP:
 				fmt.Printf("Performing Approximate Neyman-Pearson Classification with constrained false \"%v\".\n", NP_pos)
 				fmt.Printf("False %v constraint: %v, constraint weight: %v.\n", NP_pos, NP_a, NP_k)
-				targetf = CloudForest.NewNPTarget(targetf.(CloudForest.CatFeature), NP_pos, NP_a, NP_k)
+				targetf = learn.NewNPTarget(targetf.(learn.CatFeature), NP_pos, NP_a, NP_k)
 			case *costs != "":
 				fmt.Println("Using misclassification costs: ", *costs)
 				costmap := make(map[string]float64)
@@ -448,7 +447,7 @@ func main() {
 					log.Fatal(err)
 				}
 
-				regTarg := CloudForest.NewRegretTarget(targetf.(CloudForest.CatFeature))
+				regTarg := learn.NewRegretTarget(targetf.(learn.CatFeature))
 				regTarg.SetCosts(costmap)
 				targetf = regTarg
 			case *dentropy != "":
@@ -459,7 +458,7 @@ func main() {
 					log.Fatal(err)
 				}
 
-				deTarg := CloudForest.NewDEntropyTarget(targetf.(CloudForest.CatFeature))
+				deTarg := learn.NewDEntropyTarget(targetf.(learn.CatFeature))
 				deTarg.SetCosts(costmap)
 				targetf = deTarg
 			case *adacosts != "":
@@ -470,7 +469,7 @@ func main() {
 					log.Fatal(err)
 				}
 
-				actarget := CloudForest.NewAdaCostTarget(targetf.(CloudForest.CatFeature))
+				actarget := learn.NewAdaCostTarget(targetf.(learn.CatFeature))
 				actarget.SetCosts(costmap)
 				targetf = actarget
 
@@ -482,31 +481,31 @@ func main() {
 					log.Fatal(err)
 				}
 
-				wrfTarget := CloudForest.NewWRFTarget(targetf.(CloudForest.CatFeature), weightmap)
+				wrfTarget := learn.NewWRFTarget(targetf.(learn.CatFeature), weightmap)
 				targetf = wrfTarget
 
 			case entropy:
 				fmt.Println("Using entropy minimization.")
-				targetf = &CloudForest.EntropyTarget{targetf.(CloudForest.CatFeature)}
+				targetf = &learn.EntropyTarget{targetf.(learn.CatFeature)}
 
 			case adaboost:
 
 				fmt.Println("Using Adaptive Boosting.")
-				targetf = CloudForest.NewAdaBoostTarget(targetf.(CloudForest.CatFeature))
+				targetf = learn.NewAdaBoostTarget(targetf.(learn.CatFeature))
 
 			case hellinger:
 				fmt.Println("Using Hellinger Distance with postive class:", positive)
-				targetf = CloudForest.NewHDistanceTarget(targetf.(CloudForest.CatFeature), positive)
+				targetf = learn.NewHDistanceTarget(targetf.(learn.CatFeature), positive)
 
 			case gradboost != 0.0:
 				fmt.Println("Using Gradient Boosting Classification with postive class:", positive)
-				targetf = CloudForest.NewGradBoostClassTarget(targetf.(CloudForest.CatFeature), gradboost, positive)
+				targetf = learn.NewGradBoostClassTarget(targetf.(learn.CatFeature), gradboost, positive)
 
 			}
 
 			if unlabeled != "" {
 				fmt.Println("Using traduction forests with unlabeled class: ", unlabeled)
-				targetf = CloudForest.NewTransTarget(targetf.(CloudForest.CatFeature), &data.Data, unlabeled, trans_alpha, trans_beta, nNonMissing)
+				targetf = learn.NewTransTarget(targetf.(learn.CatFeature), &data.Data, unlabeled, trans_alpha, trans_beta, nNonMissing)
 
 			}
 			target = targetf
@@ -514,17 +513,17 @@ func main() {
 		}
 	}
 
-	var forestwriter *CloudForest.ForestWriter
+	var forestwriter *learn.ForestWriter
 	if *rf != "" {
 		forestfile, err := os.Create(*rf)
 		if err != nil {
 			log.Fatal(err)
 		}
 		defer forestfile.Close()
-		forestwriter = CloudForest.NewForestWriter(forestfile)
+		forestwriter = learn.NewForestWriter(forestfile)
 		switch target.(type) {
-		case CloudForest.TargetWithIntercept:
-			forestwriter.WriteForestHeader(0, *targetname, target.(CloudForest.TargetWithIntercept).Intercept())
+		case learn.TargetWithIntercept:
+			forestwriter.WriteForestHeader(0, *targetname, target.(learn.TargetWithIntercept).Intercept())
 		}
 	}
 	//****************** Setup For ACE ********************************//
@@ -553,24 +552,24 @@ func main() {
 	}
 
 	//****************** Needed Collections and vars ******************//
-	var trees []*CloudForest.Tree
-	trees = make([]*CloudForest.Tree, 0, nTrees)
+	var trees []*learn.Tree
+	trees = make([]*learn.Tree, 0, nTrees)
 
-	var imppnt *[]*CloudForest.RunningMean
-	var mmdpnt *[]*CloudForest.RunningMean
+	var imppnt *[]*learn.RunningMean
+	var mmdpnt *[]*learn.RunningMean
 	if *imp != "" {
 		fmt.Println("Recording Importance Scores.")
 
-		imppnt = CloudForest.NewRunningMeans(len(data.Data))
-		mmdpnt = CloudForest.NewRunningMeans(len(data.Data))
+		imppnt = learn.NewRunningMeans(len(data.Data))
+		mmdpnt = learn.NewRunningMeans(len(data.Data))
 	} else if ace > 0 {
-		imppnt = CloudForest.NewRunningMeans(len(data.Data))
+		imppnt = learn.NewRunningMeans(len(data.Data))
 	}
 
-	var scikikittrees []CloudForest.ScikitTree
+	var scikikittrees []learn.ScikitTree
 
 	if scikitforest != "" {
-		scikikittrees = make([]CloudForest.ScikitTree, 0, nTrees)
+		scikikittrees = make([]learn.ScikitTree, 0, nTrees)
 	}
 
 	//****************** Good Stuff Stars Here ;) ******************//
@@ -584,7 +583,7 @@ func main() {
 		var waitGroup sync.WaitGroup
 
 		waitGroup.Add(nCores)
-		treechan := make(chan *CloudForest.Tree, 0)
+		treechan := make(chan *learn.Tree, 0)
 		//fmt.Println("forest ", foresti)
 		//Grow a single forest on nCores
 		for core := 0; core < nCores; core++ {
@@ -598,7 +597,7 @@ func main() {
 					}
 				}
 
-				tree := CloudForest.NewTree()
+				tree := learn.NewTree()
 				tree.Target = *targetname
 				cases := make([]int, 0, nNonMissing)
 				oobcases := make([]int, 0, nNonMissing)
@@ -617,7 +616,7 @@ func main() {
 					depthUsed = &du
 				}
 
-				allocs := CloudForest.NewBestSplitAllocs(nSamples, targetf)
+				allocs := learn.NewBestSplitAllocs(nSamples, targetf)
 				for {
 					nCases := data.Data[0].Length()
 					//sample nCases case with replacement
@@ -645,7 +644,7 @@ func main() {
 								cases = append(cases, i)
 							}
 						}
-						CloudForest.SampleFirstN(&cases, &cases, nSamples, 0)
+						learn.SampleFirstN(&cases, &cases, nSamples, 0)
 
 					}
 
@@ -681,7 +680,7 @@ func main() {
 					if boost {
 						boostMutex.Lock()
 						ls, ps := tree.Partition(data)
-						weight = targetf.(CloudForest.BoostingTarget).Boost(ls, ps)
+						weight = targetf.(learn.BoostingTarget).Boost(ls, ps)
 						boostMutex.Unlock()
 						if weight == math.Inf(1) {
 							fmt.Printf("Boosting Reached Weight of %v\n", weight)
@@ -706,8 +705,8 @@ func main() {
 					}
 
 					if scikitforest != "" {
-						skt := CloudForest.NewScikitTree(nFeatures)
-						CloudForest.BuildScikitTree(0, tree.Root, skt)
+						skt := learn.NewScikitTree(nFeatures)
+						learn.BuildScikitTree(0, tree.Root, skt)
 						scikikittrees = append(scikikittrees, *skt)
 					}
 
@@ -715,8 +714,8 @@ func main() {
 						trees = append(trees, tree)
 
 						if treesStarted < nTrees-1 {
-							//newtree := new(CloudForest.Tree)
-							tree = CloudForest.NewTree()
+							//newtree := new(learn.Tree)
+							tree = learn.NewTree()
 							tree.Target = *targetname
 						}
 					}
@@ -766,8 +765,8 @@ func main() {
 		// 		trees = append(trees, tree)
 
 		// 		if i < nTrees-1 {
-		// 			//newtree := new(CloudForest.Tree)
-		// 			treechan <- CloudForest.NewTree()
+		// 			//newtree := new(learn.Tree)
+		// 			treechan <- learn.NewTree()
 		// 		}
 		// 	} else {
 		// 		if i < nTrees-1 {
@@ -793,7 +792,7 @@ func main() {
 			}
 
 			//Reset importance scores
-			imppnt = CloudForest.NewRunningMeans(len(data.Data))
+			imppnt = learn.NewRunningMeans(len(data.Data))
 
 			//Reshuffle contrast features
 			for i := firstace; i < len(data.Data); i++ {
@@ -807,7 +806,7 @@ func main() {
 				for i := range blacklistis {
 
 					if i < firstace && !blacklistis[i] {
-						p, _, _, m := stats.Ttest(&aceImps[i], &aceImps[i+firstace])
+						p, _, _, m := learn.Ttest(&aceImps[i], &aceImps[i+firstace])
 						if p < cutoff && m > 0.0 && i != targeti {
 							blacklistis[i] = false
 							sigcount++
@@ -820,7 +819,7 @@ func main() {
 					}
 
 				}
-				mTry = CloudForest.ParseAsIntOrFractionOfTotal(StringmTry, sigcount)
+				mTry = learn.ParseAsIntOrFractionOfTotal(StringmTry, sigcount)
 				if mTry <= 0 {
 
 					mTry = int(math.Ceil(math.Sqrt(float64(sigcount))))
@@ -871,7 +870,7 @@ func main() {
 
 			for i := 0; i < firstace; i++ {
 
-				p, _, _, m := stats.Ttest(&aceImps[i], &aceImps[i+firstace])
+				p, _, _, m := learn.Ttest(&aceImps[i], &aceImps[i+firstace])
 
 				fmt.Fprintf(impfile, "%v\t%v\t%v\t%v\n", *targetname, data.Data[i].GetName(), p, m)
 
@@ -888,13 +887,13 @@ func main() {
 	}
 
 	if dotest {
-		var bb CloudForest.VoteTallyer
+		var bb learn.VoteTallyer
 
 		testdata := data
 		testtarget := unboostedTarget
 		if testfm != "" {
 			var err error
-			testdata, err = CloudForest.LoadAFM(testfm)
+			testdata, err = learn.LoadAFM(testfm)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -913,10 +912,10 @@ func main() {
 
 		if unboostedTarget.NCats() == 0 {
 			//regression
-			bb = CloudForest.NewNumBallotBox(testdata.Data[0].Length())
+			bb = learn.NewNumBallotBox(testdata.Data[0].Length())
 		} else {
 			//classification
-			bb = CloudForest.NewCatBallotBox(testdata.Data[0].Length())
+			bb = learn.NewCatBallotBox(testdata.Data[0].Length())
 		}
 
 		for _, tree := range trees {
@@ -936,13 +935,13 @@ func main() {
 			nas := 0
 			length := testtarget.Length()
 			for i := 0; i < length; i++ {
-				truei := testtarget.(*CloudForest.DenseCatFeature).Geti(i)
+				truei := testtarget.(*learn.DenseCatFeature).Geti(i)
 				truetotals[truei]++
 				pred := bb.Tally(i)
 				if pred == "NA" {
 					nas++
 				} else {
-					predi := testtarget.(*CloudForest.DenseCatFeature).CatToNum(pred)
+					predi := testtarget.(*learn.DenseCatFeature).CatToNum(pred)
 					predtotals[predi]++
 					if pred == testtarget.GetStr(i) {
 						correct++
@@ -955,7 +954,7 @@ func main() {
 
 			}
 			fmt.Printf("Classified: %v / %v = %v\n", correct, length, float64(correct)/float64(length))
-			for i, v := range testtarget.(*CloudForest.DenseCatFeature).Back {
+			for i, v := range testtarget.(*learn.DenseCatFeature).Back {
 				fmt.Printf("Label %v Percision (Actuall/Predicted): %v / %v = %v\n", v, falsesbypred[i], predtotals[i], float64(falsesbypred[i])/float64(predtotals[i]))
 				falses := truetotals[i] - truebytrue[i]
 				fmt.Printf("Label %v Missed/Actuall Rate: %v / %v = %v\n", v, falses, truetotals[i], float64(falses)/float64(truetotals[i]))

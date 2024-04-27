@@ -8,7 +8,7 @@ import (
 	"log"
 	"os"
 
-	CloudForest "ecg.mk/learn"
+	"ecg.mk/learn"
 )
 
 func openfiles(trainfn string, testfn string) (trainW io.WriteCloser, testW io.WriteCloser) {
@@ -88,7 +88,7 @@ func main() {
 	flag.Parse()
 
 	//Parse Data
-	data, err := CloudForest.LoadAFM(*fm)
+	data, err := learn.LoadAFM(*fm)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -128,7 +128,7 @@ func main() {
 
 	}
 
-	newdata := make([]CloudForest.Feature, 0, len(data.Data)-blacklisted)
+	newdata := make([]learn.Feature, 0, len(data.Data)-blacklisted)
 	newmap := make(map[string]int, len(data.Data)-blacklisted)
 
 	for i, f := range data.Data {
@@ -164,7 +164,7 @@ func main() {
 		foldis = append(foldis, make([]int, 0, foldsize))
 	}
 
-	var targetf CloudForest.Feature
+	var targetf learn.Feature
 
 	//find the target feature
 	fmt.Printf("Target : %v\n", *targetname)
@@ -178,7 +178,7 @@ func main() {
 		targetf = data.Data[targeti]
 
 		switch targetf.(type) {
-		case *CloudForest.DenseNumFeature:
+		case *learn.DenseNumFeature:
 			unstratified = true
 		}
 	}
@@ -188,7 +188,7 @@ func main() {
 		for i := 0; i < ncases; i++ {
 			cases[i] = i
 		}
-		CloudForest.SampleFirstN(&cases, nil, len(cases), 0)
+		learn.SampleFirstN(&cases, nil, len(cases), 0)
 		for j := 0; j < folds; j++ {
 			for k := j * foldsize; k < (j+1)*foldsize; k++ {
 				foldis[j] = append(foldis[j], cases[k])
@@ -197,15 +197,15 @@ func main() {
 
 	} else {
 		//sample folds stratified by case
-		fmt.Printf("Stratifying by %v classes.\n", targetf.(*CloudForest.DenseCatFeature).NCats())
-		bSampler := CloudForest.NewBalancedSampler(targetf.(*CloudForest.DenseCatFeature))
+		fmt.Printf("Stratifying by %v classes.\n", targetf.(*learn.DenseCatFeature).NCats())
+		bSampler := learn.NewBalancedSampler(targetf.(*learn.DenseCatFeature))
 
 		fmt.Printf("Stratifying by %v classes.\n", len(bSampler.Cases))
 		var samples []int
 		for i := 0; i < len(bSampler.Cases); i++ {
 			fmt.Printf("%v cases in class %v.\n", len(bSampler.Cases[i]), i)
 			//shuffle in place
-			CloudForest.SampleFirstN(&bSampler.Cases[i], &samples, len(bSampler.Cases[i]), 0)
+			learn.SampleFirstN(&bSampler.Cases[i], &samples, len(bSampler.Cases[i]), 0)
 			stratFoldSize := len(bSampler.Cases[i]) / folds
 			for j := 0; j < folds; j++ {
 				for k := j * stratFoldSize; k < (j+1)*stratFoldSize; k++ {
@@ -245,8 +245,8 @@ func main() {
 
 		if writearff || writeall {
 			trainW, testW := openfiles(trainfn+".arff", testfn+".arff")
-			CloudForest.WriteArffCases(data, foldis[i], *targetname, testW)
-			CloudForest.WriteArffCases(data, trainis, *targetname, trainW)
+			learn.WriteArffCases(data, foldis[i], *targetname, testW)
+			learn.WriteArffCases(data, trainis, *targetname, trainW)
 		}
 
 		if ((!writelibsvm) && (!writearff)) || writeall {
@@ -257,8 +257,8 @@ func main() {
 
 		if writelibsvm || writeall {
 			trainW, testW := openfiles(trainfn+".libsvm", testfn+".libsvm")
-			CloudForest.WriteLibSvmCases(encoded, foldis[i], *targetname, testW)
-			CloudForest.WriteLibSvmCases(encoded, trainis, *targetname, trainW)
+			learn.WriteLibSvmCases(encoded, foldis[i], *targetname, testW)
+			learn.WriteLibSvmCases(encoded, trainis, *targetname, trainW)
 		}
 
 		fmt.Printf("Wrote fold %v. %v testing cases and %v training cases.\n", i, len(foldis[i]), len(trainis))
