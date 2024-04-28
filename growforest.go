@@ -19,68 +19,14 @@ import (
 )
 
 type GrowForest struct {
-	// nTrees: 100, Number of trees to grow in the predictor.
-	Trees int
-
-	// train: AFM formated feature matrix containing training data.
-	TrainFile string
-
-	// rfpred: File name to output predictor forest in sf format.
-	ForestFile string
-
-	// target: The row header of the target in the feature matrix.
-	TargetName string
-
-	// importance: File name to output importance.
-	Importance string
-
-	// cost: For categorical targets, a json string to float map of the cost of falsely identifying each category.
-	Costs string
-
-	// Dentropy: Class disutilities for disutility entropy.
-	Dentropy string
-
-	// adacost: Json costs for cost sentive AdaBoost.
-	AdaCosts string
-
-	// rfweights: For categorical targets, a json string to float map of the weights to use for each category in Weighted RF.
-	RfWeights string
-
-	// blacklist: A list of feature id's to exclude from the set of predictors.
-	Blacklist string
+	// ========================================================================================================
+	// GENERAL OPTIONS
 
 	// nCores: The number of cores to use.
 	Cores int
 
-	// nSamples: The number of cases to sample (with replacement) for each tree as a count (ex: 10) or portion of total (ex: .5). If <=0 set to total number of cases.
-	NSamples string
-
-	// mTry: Number of candidate features for each split as a count (ex: 10) or portion of total (ex: .5). Ceil(sqrt(nFeatures)) if <=0.
-	MTry string
-
-	// leafSize: The minimum number of cases on a leaf node. If <=0 will be inferred to 1 for classification 4 for regression.
-	LeafSize string
-
-	// maxDepth: Maximum tree depth. Ignored if 0.
-	MaxDepth int
-
-	// shuffleRE: A regular expression to identify features that should be shuffled.
-	ShuffleRE string
-
-	// blockRE: A regular expression to identify features that should be filtered out.
-	BlockRE string
-
-	// includeRE: Filter features that DON'T match this RE.
-	IncludeRE string
-
-	// trans_unlabeled: Class to treat as TransUnlabeled for transduction forests.
-	TransUnlabeled string
-
-	// trans_alpha: 10.0, Weight of unsupervised term in transduction impurity.
-	TransAlpha float64
-
-	// trans_beta: Multiple to penalize unlabeled class by.
-	TransBeta float64
+	// oob: Calculate and report OOB error.
+	OOB bool
 
 	// ace: Number Ace permutations to do. Output Ace style importance and p values.
 	Ace int
@@ -88,38 +34,113 @@ type GrowForest struct {
 	// cutoff: P-value Cutoff to apply to features for last forest after ACE.
 	Cutoff float64
 
+	// progress: Report tree number and running oob error.
+	Progress bool
+
+	// multiboost: Allow multi-threaded boosting which may have unexpected results. (highly experimental)
+	Multiboost bool
+
+	// noseed: Don't seed the random number generator from time.
+	NoSeed bool
+
+	// ========================================================================================================
+	// FEATURE MATRIX
+
+	// train: AFM formated feature matrix containing training data.
+	TrainFile string
+
+	// target: The row header of the target in the feature matrix.
+	TargetName string
+
 	// nContrasts: The number of randomized artificial contrast features to include in the feature matrix.
 	Contrasts int
-
-	// cpuprofile: write cpu profile to file
-	CpuProfile string
 
 	// Contrastall: Include a shuffled artificial contrast copy of every feature.
 	ContrastAll bool
 
+	// blacklist: A list of feature id's to exclude from the set of predictors.
+	Blacklist string
+
+	// blockRE: A regular expression to identify features that should be filtered out.
+	BlockRE string
+
+	// includeRE: Filter features that DON'T match this RE.
+	IncludeRE string
+
 	// impute: Impute missing values to feature mean/mode before growth.
 	Impute bool
 
-	// extra: Grow Extra Random Trees (supports learning from numerical variables only).
-	Extra bool
+	// permute: Permute the target feature (to establish random predictive power).
+	Permute bool
+
+	// shuffleRE: A regular expression to identify features that should be shuffled.
+	ShuffleRE string
+
+	// balance: Balance bagging of samples by target class for unbalanced classification.
+	Balance bool
+
+	// balanceby: Roughly balanced bag the target within each class of this feature.
+	BalanceBy string
+
+	// ========================================================================================================
+	// FOREST OPTIONS
+
+	// nTrees: 100, Number of trees to grow in the predictor.
+	Trees int
+
+	// jungle: Grow unserializable and experimental decision jungle with node recombination.
+	Jungle bool
+
+	// nobag: Don't bag samples for each tree.
+	NoBag bool
+
+	// mTry: Number of candidate features for each split as a count (ex: 10) or portion of total (ex: .5). Ceil(sqrt(nFeatures)) if <=0.
+	MTry string
+
+	// leafSize: The minimum number of cases on a leaf node. If <=0 will be inferred to 1 for classification 4 for regression.
+	LeafSize string
+
+	// nSamples: The number of cases to sample (with replacement) for each tree as a count (ex: 10) or portion of total (ex: .5). If <=0 set to total number of cases.
+	NSamples string
+
+	// maxDepth: Maximum tree depth. Ignored if 0.
+	MaxDepth int
 
 	// splitmissing: Split missing values onto a third branch at each node (experimental).
 	SplitMissing bool
 
-	// l1: Use l1 norm regression (target must be numeric).
-	L1 bool
-
-	// density: Build density estimating trees instead of classification/regression trees.
-	Density bool
+	// force: Force at least one non constant feature to be tested for each split.
+	Force bool
 
 	// vet: Penalize potential splitter impurity decrease by subtracting the best split of a permuted target.
 	Vet bool
 
-	// positive: true, Positive class to output probabilities for.
-	Positive string
+	// evaloob: Evaluate potential splitting features on OOB cases after finding split value in bag.
+	EvalOOB bool
 
-	// NP: Do approximate Neyman-Pearson classification.
-	NP bool
+	// extra: Grow Extra Random Trees (supports learning from numerical variables only).
+	Extra bool
+
+	// ========================================================================================================
+	// DENSITY
+
+	// density: Build density estimating trees instead of classification/regression trees.
+	Density bool
+
+	// ========================================================================================================
+	// REGRESSION
+
+	// l1: Use l1 norm regression (target must be numeric).
+	UseL1 bool
+
+	// ordinal: Use ordinal regression (target must be numeric).
+	UseOrdinal bool
+
+	// ========================================================================================================
+	// CLASIFICATION
+
+	// NP: Use approximate Neyman-Pearson classification.
+	UseNP bool
 
 	// NP_pos: 1, Class label to constrain percision in NP classification.
 	NP_pos string
@@ -130,53 +151,44 @@ type GrowForest struct {
 	// NP_k: 100, Weight of constraint in NP classification [0,Inf+)
 	NP_k float64
 
-	// evaloob: Evaluate potential splitting features on OOB cases after finding split value in bag.
-	EvalOOB bool
-
-	// force: Force at least one non constant feature to be tested for each split.
-	Force bool
+	// cost: For categorical targets, a json string to float map of the cost of falsely identifying each category.
+	UseCosts string
 
 	// entropy: Use entropy minimizing classification (target must be categorical).
-	Entropy bool
+	UseEntropy bool
 
-	// oob: Calculate and report OOB error.
-	OOB bool
+	// dentropy: Class disutilities for disutility entropy.
+	UseDentropy string
 
-	// jungle: Grow unserializable and experimental decision jungle with node recombination.
-	Jungle bool
+	// rfweights: For categorical targets, a json string to float map of the weights to use for each category in Weighted RF.
+	UseRfWeights string
 
-	// oobpreds: Calculate and report oob predictions in the file specified.
-	CaseOOB string
-
-	// progress: Report tree number and running oob error.
-	Progress bool
+	// adacost: Json costs for cost sentive AdaBoost.
+	UseAdaCosts string
 
 	// adaboost: Use Adaptive boosting for regression/classification.
-	AdaBoost bool
+	UseAdaBoost bool
 
-	// hellinger: Build trees using Hellinger distance.
-	Hellinger bool
+	// hellinger: Build trees using UseHellinger distance.
+	UseHellinger bool
+
+	// positive: true, Positive class to output probabilities for.
+	Positive string
 
 	// gbt: Use gradient boosting with the specified learning rate.
-	GradBoost float64
+	UseGradBoost float64
 
-	// multiboost: Allow multi-threaded boosting which may have unexpected results. (highly experimental)
-	Multiboost bool
+	// trans-unlabeled: Class to treat as TransUnlabeled for transduction forests.
+	TransUnlabeled string
 
-	// nobag: Don't bag samples for each tree.
-	NoBag bool
+	// trans-alpha: 10.0, Weight of unsupervised term in transduction impurity.
+	TransAlpha float64
 
-	// balance: Balance bagging of samples by target class for unbalanced classification.
-	Balance bool
+	// trans-beta: Multiple to penalize unlabeled class by.
+	TransBeta float64
 
-	// balanceby: Roughly balanced bag the target within each class of this feature.
-	BalanceBy string
-
-	// ordinal: Use ordinal regression (target must be numeric).
-	Ordinal bool
-
-	// permute: Permute the target feature (to establish random predictive power).
-	Permute bool
+	// ========================================================================================================
+	// TESTING
 
 	// selftest: Test the forest on the data and report accuracy.
 	SelfTest bool
@@ -184,26 +196,40 @@ type GrowForest struct {
 	// test: Data to test the model on.
 	TestFile string
 
+	// oobpreds: Calculate and report oob predictions in the file specified.
+	CaseOOB string
+
+	// ========================================================================================================
+	// OUTOUT
+
+	// rfpred: File name to output predictor forest in sf format.
+	ForestFile string
+
+	// importance: File name to output importance.
+	Importance string
+
+	// cpuprofile: write cpu profile to file
+	CpuProfile string
+
 	// scikitforest: Write out a (partially complete) scikit style forest in json.
 	ScikitForest string
-
-	// noseed: Don't seed the random number generator from time.
-	NoSeed bool
 }
 
-func NewGrowForest(train string, target string, trees int, def bool) *GrowForest {
+func NewGrowForest() *GrowForest {
 	g := GrowForest{
-		TrainFile:  train,
-		TargetName: target,
-		Trees:      trees,
 		Cores:      1,
-
+		Trees:      100,
 		TransAlpha: 10.0,
 		Positive:   "True",
 		NP_pos:     "1",
 		NP_a:       0.1,
 		NP_k:       100,
 	}
+
+	return &g
+}
+
+func (g *GrowForest) Apply(train string, target string, trees int) *GrowForest {
 
 	// "-oob",
 	// "-save", "./work/output/terma/qtdb/rfx/qtdb.model.sf",
@@ -212,195 +238,228 @@ func NewGrowForest(train string, target string, trees int, def bool) *GrowForest
 	// "-oobpreds", "./work/output/terma/qtdb/rfx/qtdb.oob.csv",
 	// "-selftest",
 
-	if def {
-		pref := strings.TrimSuffix(train, ".fm")
-		g.Cores = runtime.NumCPU()
-		g.OOB = true
-		g.SelfTest = true
-		g.ForestFile = pref + ".model.sf"
-		g.Importance = pref + ".imp.csv"
-		g.CaseOOB = pref + ".oob.csv"
+	if trees > 0 {
+		g.Trees = trees
 	}
 
-	return &g
+	g.TrainFile = train
+	g.TargetName = target
+
+	pref := strings.TrimSuffix(train, ".csv")
+	pref = strings.TrimSuffix(pref, ".fm")
+
+	g.Cores = runtime.NumCPU()
+	g.OOB = true
+	g.SelfTest = true
+	g.ForestFile = pref + ".model.sf"
+	g.Importance = pref + ".imp.csv"
+	g.CaseOOB = pref + ".oob.csv"
+
+	return g
 }
 
-func GrowForestParse() *GrowForest {
-	g := NewGrowForest("", "", 100, false)
+func (gf *GrowForest) Clone() *GrowForest {
+	copy := *gf
+	return &copy
+}
 
-	// fm string
-	flag.StringVar(&g.TrainFile, "train", "", "AFM formated feature matrix containing training data.")
+func GrowForestFlags(px string) *GrowForest {
+	g := NewGrowForest()
 
-	// testfm string
-	flag.StringVar(&g.TestFile, "test", "", "Data to test the model on.")
-
-	// rf string
-	flag.StringVar(&g.ForestFile, "save", "", "File name to output predictor forest in sf format.")
-	flag.StringVar(&g.ForestFile, "rfpred", "", "File name to output predictor forest in sf format.")
-
-	// targetname string
-	flag.StringVar(&g.TargetName, "target", "", "The row header of the target in the feature matrix.")
-
-	// imp string
-	flag.StringVar(&g.Importance, "importance", "", "File name to output importance.")
-
-	// costs string
-	flag.StringVar(&g.Costs, "cost", "", "For categorical targets, a json string to float map of the cost of falsely identifying each category.")
-
-	// dentropy string
-	flag.StringVar(&g.Dentropy, "dentropy", "", "Class disutilities for disutility entropy.")
-
-	// adacosts string
-	flag.StringVar(&g.AdaCosts, "adacost", "", "Json costs for cost sentive AdaBoost.")
-
-	// rfweights string
-	flag.StringVar(&g.RfWeights, "rfweights", "", "For categorical targets, a json string to float map of the weights to use for each category in Weighted RF.")
-
-	// blacklist string
-	flag.StringVar(&g.Blacklist, "blacklist", "", "A list of feature id's to exclude from the set of predictors.")
+	// ========================================================================================================
+	// GENERAL OPTIONS
 
 	// nCores int
-	flag.IntVar(&g.Cores, "cores", 1, "The number of cores to use.")
-
-	// StringnSamples string
-	flag.StringVar(&g.NSamples, "nSamples", "0", "The number of cases to sample (with replacement) for each tree as a count (ex: 10) or portion of total (ex: .5). If <=0 set to total number of cases.")
-
-	// StringmTry string
-	flag.StringVar(&g.MTry, "mTry", "0", "Number of candidate features for each split as a count (ex: 10) or portion of total (ex: .5). Ceil(sqrt(nFeatures)) if <=0.")
-
-	// StringleafSize string
-	flag.StringVar(&g.LeafSize, "leafSize", "0", "The minimum number of cases on a leaf node. If <=0 will be inferred to 1 for classification 4 for regression.")
-
-	// maxDepth int
-	flag.IntVar(&g.MaxDepth, "maxDepth", 0, "Maximum tree depth. Ignored if 0.")
-
-	// shuffleRE string
-	flag.StringVar(&g.ShuffleRE, "shuffleRE", "", "A regular expression to identify features that should be shuffled.")
-
-	// blockRE string
-	flag.StringVar(&g.BlockRE, "blockRE", "", "A regular expression to identify features that should be filtered out.")
-
-	// includeRE string
-	flag.StringVar(&g.IncludeRE, "includeRE", "", "Filter features that DON'T match this RE.")
-
-	// unlabeled string
-	flag.StringVar(&g.TransUnlabeled, "trans_unlabeled", "", "Class to treat as unlabeled for transduction forests.")
-
-	// trans_alpha float64
-	flag.Float64Var(&g.TransAlpha, "trans_alpha", 10.0, "Weight of unsupervised term in transduction impurity.")
-
-	// trans_beta float64
-	flag.Float64Var(&g.TransBeta, "trans_beta", 0.0, "Multiple to penalize unlabeled class by.")
-
-	// nTrees int
-	flag.IntVar(&g.Trees, "trees", 100, "Number of trees to grow in the predictor.")
-
-	// ace int
-	flag.IntVar(&g.Ace, "ace", 0, "Number ace permutations to do. Output ace style importance and p values.")
-
-	// cutoff float64
-	flag.Float64Var(&g.Cutoff, "cutoff", 0.0, "P-value cutoff to apply to features for last forest after ACE.")
-
-	// nContrasts int
-	flag.IntVar(&g.Contrasts, "contrasts", 0, "The number of randomized artificial contrast features to include in the feature matrix.")
-
-	// cpuprofile string
-	flag.StringVar(&g.CpuProfile, "cpuprofile", "", "write cpu profile to file")
-
-	// contrastAll bool
-	flag.BoolVar(&g.ContrastAll, "contrastall", false, "Include a shuffled artificial contrast copy of every feature.")
-
-	// impute bool
-	flag.BoolVar(&g.Impute, "impute", false, "Impute missing values to feature mean/mode before growth.")
-
-	// extra bool
-	flag.BoolVar(&g.Extra, "extra", false, "Grow Extra Random Trees (supports learning from numerical variables only).")
-
-	// splitmissing bool
-	flag.BoolVar(&g.SplitMissing, "splitmissing", false, "Split missing values onto a third branch at each node (experimental).")
-
-	// l1 bool
-	flag.BoolVar(&g.L1, "l1", false, "Use l1 norm regression (target must be numeric).")
-
-	// density bool
-	flag.BoolVar(&g.Density, "density", false, "Build density estimating trees instead of classification/regression trees.")
-
-	// vet bool
-	flag.BoolVar(&g.Vet, "vet", false, "Penalize potential splitter impurity decrease by subtracting the best split of a permuted target.")
-
-	// positive string
-	flag.StringVar(&g.Positive, "positive", "True", "Positive class to output probabilities for.")
-
-	// NP bool
-	flag.BoolVar(&g.NP, "NP", false, "Do approximate Neyman-Pearson classification.")
-
-	// NP_pos string
-	flag.StringVar(&g.NP_pos, "NP_pos", "1", "Class label to constrain percision in NP classification.")
-
-	// NP_a float64
-	flag.Float64Var(&g.NP_a, "NP_a", 0.1, "Constraint on percision in NP classification [0,1]")
-
-	// NP_k float64
-	flag.Float64Var(&g.NP_k, "NP_k", 100, "Weight of constraint in NP classification [0,Inf+)")
-
-	// evaloob bool
-	flag.BoolVar(&g.EvalOOB, "evaloob", false, "Evaluate potential splitting features on OOB cases after finding split value in bag.")
-
-	// force bool
-	flag.BoolVar(&g.Force, "force", false, "Force at least one non constant feature to be tested for each split.")
-
-	// entropy bool
-	flag.BoolVar(&g.Entropy, "entropy", false, "Use entropy minimizing classification (target must be categorical).")
+	flag.IntVar(&g.Cores, px+"cores", 1, "The number of cores to use.")
 
 	// oob bool
-	flag.BoolVar(&g.OOB, "oob", false, "Calculate and report oob error.")
+	flag.BoolVar(&g.OOB, px+"oob", false, "Calculate and report oob error.")
 
-	// jungle bool
-	flag.BoolVar(&g.Jungle, "jungle", false, "Grow unserializable and experimental decision jungle with node recombination.")
+	// ace int
+	flag.IntVar(&g.Ace, px+"ace", 0, "Number ace permutations to do. Output ace style importance and p values.")
 
-	// caseoob string
-	flag.StringVar(&g.CaseOOB, "oobpreds", "", "Calculate and report oob predictions in the file specified.")
+	// cutoff float64
+	flag.Float64Var(&g.Cutoff, px+"cutoff", 0.0, "P-value cutoff to apply to features for last forest after ACE.")
 
 	// progress bool
-	flag.BoolVar(&g.Progress, "progress", false, "Report tree number and running oob error.")
-
-	// adaboost bool
-	flag.BoolVar(&g.AdaBoost, "adaboost", false, "Use Adaptive boosting for regression/classification.")
-
-	// hellinger bool
-	flag.BoolVar(&g.Hellinger, "hellinger", false, "Build trees using hellinger distance.")
-
-	// gradboost float64
-	flag.Float64Var(&g.GradBoost, "gbt", 0.0, "Use gradient boosting with the specified learning rate.")
+	flag.BoolVar(&g.Progress, px+"progress", false, "Report tree number and running oob error.")
 
 	// multiboost bool
-	flag.BoolVar(&g.Multiboost, "multiboost", false, "Allow multi-threaded boosting which may have unexpected results. (highly experimental)")
-
-	// nobag bool
-	flag.BoolVar(&g.NoBag, "nobag", false, "Don't bag samples for each tree.")
-
-	// balance bool
-	flag.BoolVar(&g.Balance, "balance", false, "Balance bagging of samples by target class for unbalanced classification.")
-
-	// balanceby string
-	flag.StringVar(&g.BalanceBy, "balanceby", "", "Roughly balanced bag the target within each class of this feature.")
-
-	// ordinal bool
-	flag.BoolVar(&g.Ordinal, "ordinal", false, "Use ordinal regression (target must be numeric).")
-
-	// permutate bool
-	flag.BoolVar(&g.Permute, "permute", false, "Permute the target feature (to establish random predictive power).")
-
-	// dotest bool
-	flag.BoolVar(&g.SelfTest, "selftest", false, "Test the forest on the data and report accuracy.")
-
-	// scikitforest string
-	flag.StringVar(&g.ScikitForest, "scikitforest", "", "Write out a (partially complete) scikit style forest in json.")
+	flag.BoolVar(&g.Multiboost, px+"multiboost", false, "Allow multi-threaded boosting which may have unexpected results. (highly experimental)")
 
 	// noseed bool
-	flag.BoolVar(&g.NoSeed, "noseed", false, "Don't seed the random number generator from time.")
+	flag.BoolVar(&g.NoSeed, px+"noseed", false, "Don't seed the random number generator from time.")
 
-	flag.Parse()
+	// ========================================================================================================
+	// FEATURE MATRIX
+
+	// fm string
+	flag.StringVar(&g.TrainFile, px+"train", "", "AFM formated feature matrix containing training data.")
+
+	// targetname string
+	flag.StringVar(&g.TargetName, px+"target", "", "The row header of the target in the feature matrix.")
+
+	// nContrasts int
+	flag.IntVar(&g.Contrasts, px+"contrasts", 0, "The number of randomized artificial contrast features to include in the feature matrix.")
+
+	// contrastAll bool
+	flag.BoolVar(&g.ContrastAll, px+"contrastall", false, "Include a shuffled artificial contrast copy of every feature.")
+
+	// blacklist string
+	flag.StringVar(&g.Blacklist, px+"blacklist", "", "A list of feature id's to exclude from the set of predictors.")
+
+	// blockRE string
+	flag.StringVar(&g.BlockRE, px+"blockRE", "", "A regular expression to identify features that should be filtered out.")
+
+	// includeRE string
+	flag.StringVar(&g.IncludeRE, px+"includeRE", "", "Filter features that DON'T match this RE.")
+
+	// impute bool
+	flag.BoolVar(&g.Impute, px+"impute", false, "Impute missing values to feature mean/mode before growth.")
+
+	// permutate bool
+	flag.BoolVar(&g.Permute, px+"permute", false, "Permute the target feature (to establish random predictive power).")
+
+	// shuffleRE string
+	flag.StringVar(&g.ShuffleRE, px+"shuffleRE", "", "A regular expression to identify features that should be shuffled.")
+
+	// balance bool
+	flag.BoolVar(&g.Balance, px+"balance", false, "Balance bagging of samples by target class for unbalanced classification.")
+
+	// balanceby string
+	flag.StringVar(&g.BalanceBy, px+"balanceby", "", "Roughly balanced bag the target within each class of this feature.")
+
+	// ========================================================================================================
+	// FOREST OPTIONS
+
+	// nTrees int
+	flag.IntVar(&g.Trees, px+"trees", 100, "Number of trees to grow in the predictor.")
+
+	// jungle bool
+	flag.BoolVar(&g.Jungle, px+"jungle", false, "Grow unserializable and experimental decision jungle with node recombination.")
+
+	// nobag bool
+	flag.BoolVar(&g.NoBag, px+"nobag", false, "Don't bag samples for each tree.")
+
+	// StringmTry string
+	flag.StringVar(&g.MTry, px+"mTry", "0", "Number of candidate features for each split as a count (ex: 10) or portion of total (ex: .5). Ceil(sqrt(nFeatures)) if <=0.")
+
+	// StringleafSize string
+	flag.StringVar(&g.LeafSize, px+"leafSize", "0", "The minimum number of cases on a leaf node. If <=0 will be inferred to 1 for classification 4 for regression.")
+
+	// StringnSamples string
+	flag.StringVar(&g.NSamples, px+"nSamples", "0", "The number of cases to sample (with replacement) for each tree as a count (ex: 10) or portion of total (ex: .5). If <=0 set to total number of cases.")
+
+	// maxDepth int
+	flag.IntVar(&g.MaxDepth, px+"maxDepth", 0, "Maximum tree depth. Ignored if 0.")
+
+	// splitmissing bool
+	flag.BoolVar(&g.SplitMissing, px+"splitmissing", false, "Split missing values onto a third branch at each node (experimental).")
+
+	// force bool
+	flag.BoolVar(&g.Force, px+"force", false, "Force at least one non constant feature to be tested for each split.")
+
+	// vet bool
+	flag.BoolVar(&g.Vet, px+"vet", false, "Penalize potential splitter impurity decrease by subtracting the best split of a permuted target.")
+
+	// evaloob bool
+	flag.BoolVar(&g.EvalOOB, px+"evaloob", false, "Evaluate potential splitting features on OOB cases after finding split value in bag.")
+
+	// extra bool
+	flag.BoolVar(&g.Extra, px+"extra", false, "Grow Extra Random Trees (supports learning from numerical variables only).")
+
+	// ========================================================================================================
+	// DENSITY
+
+	flag.BoolVar(&g.Density, px+"density", false, "Build density estimating trees instead of classification/regression trees.")
+
+	// ========================================================================================================
+	// REGRESSION
+
+	// - Using l1/absolute deviance error.
+	flag.BoolVar(&g.UseL1, px+"l1", false, "Use l1 norm regression (target must be numeric).")
+
+	// ordinal bool
+	flag.BoolVar(&g.UseOrdinal, px+"ordinal", false, "Use ordinal regression (target must be numeric).")
+
+	// ========================================================================================================
+	// CLASIFICATION
+
+	// NP bool
+	flag.BoolVar(&g.UseNP, px+"NP", false, "Use approximate Neyman-Pearson classification.")
+
+	// NP_pos string
+	flag.StringVar(&g.NP_pos, px+"NP-pos", "1", "Class label to constrain percision in NP classification.")
+
+	// NP_a float64
+	flag.Float64Var(&g.NP_a, px+"NP-a", 0.1, "Constraint on percision in NP classification [0,1]")
+
+	// NP_k float64
+	flag.Float64Var(&g.NP_k, px+"NP-k", 100, "Weight of constraint in NP classification [0,Inf+)")
+
+	// entropy bool
+	flag.BoolVar(&g.UseEntropy, px+"entropy", false, "Use entropy minimizing classification (target must be categorical).")
+
+	// costs string
+	flag.StringVar(&g.UseCosts, px+"cost", "", "For categorical targets, a json string to float map of the cost of falsely identifying each category.")
+
+	// dentropy string
+	flag.StringVar(&g.UseDentropy, px+"dentropy", "", "Class disutilities for disutility entropy.")
+
+	// rfweights string
+	flag.StringVar(&g.UseRfWeights, px+"rfweights", "", "For categorical targets, a json string to float map of the weights to use for each category in Weighted RF.")
+
+	// adacosts string
+	flag.StringVar(&g.UseAdaCosts, px+"adacost", "", "Json costs for cost sentive AdaBoost.")
+
+	// adaboost bool
+	flag.BoolVar(&g.UseAdaBoost, px+"adaboost", false, "Use Adaptive boosting for regression/classification.")
+
+	// hellinger bool
+	flag.BoolVar(&g.UseHellinger, px+"hellinger", false, "Build trees using hellinger distance.")
+
+	// positive string
+	flag.StringVar(&g.Positive, px+"positive", "True", "Positive class to output probabilities for.")
+
+	// gradboost float64
+	flag.Float64Var(&g.UseGradBoost, px+"gbt", 0.0, "Use gradient boosting with the specified learning rate.")
+
+	// unlabeled string
+	flag.StringVar(&g.TransUnlabeled, px+"trans-unlabeled", "", "Class to treat as unlabeled for transduction forests.")
+
+	// trans_alpha float64
+	flag.Float64Var(&g.TransAlpha, px+"trans-alpha", 10.0, "Weight of unsupervised term in transduction impurity.")
+
+	// trans_beta float64
+	flag.Float64Var(&g.TransBeta, px+"trans-beta", 0.0, "Multiple to penalize unlabeled class by.")
+
+	// ========================================================================================================
+	// TESTING
+
+	// testfm string
+	flag.StringVar(&g.TestFile, px+"test", "", "Data to test the model on.")
+
+	// dotest bool
+	flag.BoolVar(&g.SelfTest, px+"selftest", false, "Test the forest on the data and report accuracy.")
+
+	// caseoob string
+	flag.StringVar(&g.CaseOOB, px+"oobpreds", "", "Calculate and report oob predictions in the file specified.")
+
+	// ========================================================================================================
+	// OUTOUT
+
+	// rf string
+	flag.StringVar(&g.ForestFile, px+"save", "", "File name to output predictor forest in sf format.")
+	flag.StringVar(&g.ForestFile, px+"rfpred", "", "File name to output predictor forest in sf format.")
+
+	// imp string
+	flag.StringVar(&g.Importance, px+"importance", "", "File name to output importance.")
+
+	// cpuprofile string
+	flag.StringVar(&g.CpuProfile, px+"cpuprofile", "", "write cpu profile to file")
+
+	// scikitforest string
+	flag.StringVar(&g.ScikitForest, px+"scikitforest", "", "Write out a (partially complete) scikit style forest in json.")
 
 	return g
 }
@@ -408,7 +467,7 @@ func GrowForestParse() *GrowForest {
 func (g *GrowForest) Fit() {
 	nForest := 1
 
-	fmt.Println("-----------------------")
+	fmt.Println("--------------------------------------------------------------------")
 
 	if !g.NoSeed {
 		rand.Seed(time.Now().UTC().UnixNano())
@@ -422,7 +481,7 @@ func (g *GrowForest) Fit() {
 		fmt.Println("! MULTIBOOST!!!!1!!!!1!!11 (things may break).")
 	}
 	var boostMutex sync.Mutex
-	boost := (g.AdaBoost || g.GradBoost != 0.0)
+	boost := (g.UseAdaBoost || g.UseGradBoost != 0.0)
 	if boost && !g.Multiboost {
 		g.Cores = 1
 	}
@@ -534,12 +593,6 @@ func (g *GrowForest) Fit() {
 	nFeatures := len(data.Data) - blacklisted - 1
 	fmt.Printf("< Features: %v\n", nFeatures)
 
-	mTry := ParseAsIntOrFractionOfTotal(g.MTry, nFeatures)
-	if mTry <= 0 {
-		mTry = int(math.Ceil(math.Sqrt(float64(nFeatures))))
-	}
-	fmt.Printf("< mTry: %v\n", mTry)
-
 	if g.Impute {
 		fmt.Println("- Imputing missing values to feature mean/mode.")
 		data.ImputeMissing()
@@ -585,6 +638,12 @@ func (g *GrowForest) Fit() {
 	}
 	fmt.Printf("< Non-Missing cases: %v\n", nNonMissing)
 
+	mTry := ParseAsIntOrFractionOfTotal(g.MTry, nFeatures)
+	if mTry <= 0 {
+		mTry = int(math.Ceil(math.Sqrt(float64(nFeatures))))
+	}
+	fmt.Printf("< mTry: %v\n", mTry)
+
 	leafSize := ParseAsIntOrFractionOfTotal(g.LeafSize, nNonMissing)
 	if leafSize <= 0 {
 		if boost {
@@ -613,7 +672,7 @@ func (g *GrowForest) Fit() {
 		g.OOB = true
 	}
 
-	fmt.Println("-----------------------")
+	fmt.Println("--------------------------------------------------------------------")
 
 	//****** Set up Target for Alternative Impurity  if needed *******//
 	var target Target
@@ -624,20 +683,20 @@ func (g *GrowForest) Fit() {
 		switch tf := targetf.(type) {
 		case NumFeature:
 			fmt.Println("@ Performing regression.")
-			if g.L1 {
+			if g.UseL1 {
 				fmt.Println("- Using l1/absolute deviance error.")
 				targetf = &L1Target{tf}
 			}
-			if g.Ordinal {
+			if g.UseOrdinal {
 				fmt.Println("- Using Ordinal (mode) prediction.")
 				targetf = NewOrdinalTarget(tf)
 			}
 			switch {
-			case g.GradBoost != 0.0:
+			case g.UseGradBoost != 0.0:
 				fmt.Println("- Using Gradient Boosting.")
-				targetf = NewGradBoostTarget(tf, g.GradBoost)
+				targetf = NewGradBoostTarget(tf, g.UseGradBoost)
 
-			case g.AdaBoost:
+			case g.UseAdaBoost:
 				fmt.Println("- Using Numeric Adaptive Boosting.")
 				targetf = NewNumAdaBoostTarget(tf)
 			}
@@ -646,14 +705,15 @@ func (g *GrowForest) Fit() {
 		case CatFeature:
 			fmt.Printf("@ Performing classification with %v categories.\n", targetf.NCats())
 			switch {
-			case g.NP:
+			case g.UseNP:
 				fmt.Printf("- Performing Approximate Neyman-Pearson Classification with constrained false \"%v\".\n", g.NP_pos)
 				fmt.Printf("- False %v constraint: %v, constraint weight: %v.\n", g.NP_pos, g.NP_a, g.NP_k)
 				targetf = NewNPTarget(tf, g.NP_pos, g.NP_a, g.NP_k)
-			case g.Costs != "":
-				fmt.Println("- Using misclassification costs: ", g.Costs)
+
+			case g.UseCosts != "":
+				fmt.Println("- Using misclassification costs: ", g.UseCosts)
 				costmap := make(map[string]float64)
-				err := json.Unmarshal([]byte(g.Costs), &costmap)
+				err := json.Unmarshal([]byte(g.UseCosts), &costmap)
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -661,10 +721,15 @@ func (g *GrowForest) Fit() {
 				regTarg := NewRegretTarget(tf)
 				regTarg.SetCosts(costmap)
 				targetf = regTarg
-			case g.Dentropy != "":
-				fmt.Println("- Using entropy with disutilities: ", g.Dentropy)
+
+			case g.UseEntropy:
+				fmt.Println("- Using entropy minimization.")
+				targetf = &EntropyTarget{tf}
+
+			case g.UseDentropy != "":
+				fmt.Println("- Using entropy with disutilities: ", g.UseDentropy)
 				costmap := make(map[string]float64)
-				err := json.Unmarshal([]byte(g.Dentropy), &costmap)
+				err := json.Unmarshal([]byte(g.UseDentropy), &costmap)
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -672,10 +737,22 @@ func (g *GrowForest) Fit() {
 				deTarg := NewDEntropyTarget(tf)
 				deTarg.SetCosts(costmap)
 				targetf = deTarg
-			case g.AdaCosts != "":
-				fmt.Println("- Using cost sensative AdaBoost costs: ", g.AdaCosts)
+
+			case g.UseRfWeights != "":
+				fmt.Println("- Using rf weights: ", g.UseRfWeights)
+				weightmap := make(map[string]float64)
+				err := json.Unmarshal([]byte(g.UseRfWeights), &weightmap)
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				wrfTarget := NewWRFTarget(tf, weightmap)
+				targetf = wrfTarget
+
+			case g.UseAdaCosts != "":
+				fmt.Println("- Using cost sensative AdaBoost costs: ", g.UseAdaCosts)
 				costmap := make(map[string]float64)
-				err := json.Unmarshal([]byte(g.AdaCosts), &costmap)
+				err := json.Unmarshal([]byte(g.UseAdaCosts), &costmap)
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -684,32 +761,17 @@ func (g *GrowForest) Fit() {
 				actarget.SetCosts(costmap)
 				targetf = actarget
 
-			case g.RfWeights != "":
-				fmt.Println("- Using rf weights: ", g.RfWeights)
-				weightmap := make(map[string]float64)
-				err := json.Unmarshal([]byte(g.RfWeights), &weightmap)
-				if err != nil {
-					log.Fatal(err)
-				}
-
-				wrfTarget := NewWRFTarget(tf, weightmap)
-				targetf = wrfTarget
-
-			case g.Entropy:
-				fmt.Println("- Using entropy minimization.")
-				targetf = &EntropyTarget{tf}
-
-			case g.AdaBoost:
+			case g.UseAdaBoost:
 				fmt.Println("- Using Adaptive Boosting.")
 				targetf = NewAdaBoostTarget(tf)
 
-			case g.Hellinger:
+			case g.UseHellinger:
 				fmt.Println("- Using Hellinger Distance with postive class:", g.Positive)
 				targetf = NewHDistanceTarget(tf, g.Positive)
 
-			case g.GradBoost != 0.0:
+			case g.UseGradBoost != 0.0:
 				fmt.Println("- Using Gradient Boosting Classification with postive class:", g.Positive)
-				targetf = NewGradBoostClassTarget(tf, g.GradBoost, g.Positive)
+				targetf = NewGradBoostClassTarget(tf, g.UseGradBoost, g.Positive)
 
 			}
 
@@ -773,6 +835,7 @@ func (g *GrowForest) Fit() {
 		imppnt = NewRunningMeans(len(data.Data))
 		mmdpnt = NewRunningMeans(len(data.Data))
 	} else if g.Ace > 0 {
+		fmt.Println("- Recording Ace importance and p values")
 		imppnt = NewRunningMeans(len(data.Data))
 	}
 
@@ -798,9 +861,11 @@ func (g *GrowForest) Fit() {
 	trainingStart := time.Now()
 
 	for foresti := 0; foresti < nForest; foresti++ {
-		var treesStarted, treesFinished int
-		treesStarted = g.Cores
 		var recordingTree sync.Mutex
+		var treesStarted int
+		var treesFinished int
+		var prevErr = 1.0
+		treesStarted = g.Cores
 		var waitGroup sync.WaitGroup
 
 		waitGroup.Add(g.Cores)
@@ -941,7 +1006,10 @@ func (g *GrowForest) Fit() {
 					}
 					if g.Progress {
 						treesFinished++
-						fmt.Printf("- Model oob error after tree %v : %v\n", treesFinished, oobVotes.TallyError(unboostedTarget))
+						berr := oobVotes.TallyError(unboostedTarget)
+						diff := prevErr - berr
+						prevErr = berr
+						fmt.Printf("%% OOB error after tree %4v :  %.4f  %+10.6f\n", treesFinished, berr, diff)
 					}
 					if treesStarted < g.Trees {
 						treesStarted++
@@ -1053,7 +1121,7 @@ func (g *GrowForest) Fit() {
 		fmt.Printf("= Out of Bag Error : %v\n", oobVotes.TallyError(unboostedTarget))
 	}
 
-	fmt.Println("-----------------------")
+	fmt.Println("--------------------------------------------------------------------")
 
 	if g.ScikitForest != "" {
 		fmt.Printf("> Scikit Forest: %v\n", g.ScikitForest)

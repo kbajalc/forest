@@ -66,8 +66,10 @@ func (f *DenseCatFeature) OneHot() (fs []Feature) {
 		fs = make([]Feature, 0, f.NCats())
 		for j, sv := range f.Back {
 			fn := &DenseCatFeature{
-				&CatMap{map[string]int{"false": 0, "true": 1},
-					[]string{"false", "true"}},
+				&CatMap{
+					Map:  map[string]int{"false": 0, "true": 1},
+					Back: []string{"false", "true"},
+				},
 				make([]int, l),
 				f.Missing,
 				f.Name + "==" + sv,
@@ -1152,8 +1154,11 @@ func (f *DenseCatFeature) ShuffledCopy() Feature {
 func (f *DenseCatFeature) Copy() Feature {
 	capacity := len(f.Missing)
 	fake := &DenseCatFeature{
-		&CatMap{f.Map,
-			f.Back},
+		&CatMap{
+			Map:  f.Map,
+			Back: f.Back,
+			// TODO: Maybe a problem here with access mutex
+		},
 		nil,
 		make([]bool, capacity),
 		f.Name,

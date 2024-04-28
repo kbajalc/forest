@@ -1,5 +1,7 @@
 package learn
 
+import "sync"
+
 /*
 CatMap is for mapping categorical values to integers.
 It contains:
@@ -12,18 +14,20 @@ And is embedded by Feature and CatBallotBox.
 type CatMap struct {
 	Map  map[string]int //map categories from string to Num
 	Back []string       // map categories from Num to string
+	mx   sync.Mutex
 }
 
 // CatToNum provides the int equivalent of the provided categorical value
 // if it already exists or adds it to the map and returns the new value if
 // it doesn't.
 func (cm *CatMap) CatToNum(value string) (numericv int) {
+	cm.mx.Lock()
+	defer cm.mx.Unlock()
 	numericv, exsists := cm.Map[value]
 	if !exsists {
 		numericv = len(cm.Back)
 		cm.Map[value] = numericv
 		cm.Back = append(cm.Back, value)
-
 	}
 	return
 }

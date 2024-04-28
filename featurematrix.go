@@ -311,8 +311,10 @@ func (fm *FeatureMatrix) LoadCases(data *csv.Reader, rowlabels bool) {
 		}
 		fm.Cases = append(fm.Cases, caselabel)
 
-		for i, v := range record {
-			fm.Data[i].Append(v)
+		for _, d := range fm.Data {
+			i := fm.Map[d.GetName()]
+			v := record[i]
+			d.Append(v)
 		}
 
 		count++
@@ -339,7 +341,7 @@ func ParseAFM(input io.Reader) *FeatureMatrix {
 
 	if len(headers[0]) > 1 {
 		sniff := headers[0][:2]
-		if sniff == "N:" || sniff == "C:" || sniff == "B:" {
+		if sniff == "N:" || sniff == "C:" || sniff == "B:" || sniff == "T:" || sniff == "R:" {
 			//features in cols
 
 			for i, label := range headers {
@@ -350,9 +352,12 @@ func ParseAFM(input io.Reader) *FeatureMatrix {
 						Name:       label,
 						HasMissing: false,
 					})
-				} else if label[:2] == "C:" || label[:2] == "B:" {
+				} else if label[:2] == "C:" || label[:2] == "B:" || label[:2] == "T:" {
 					data = append(data, &DenseCatFeature{
-						CatMap:       &CatMap{make(map[string]int, 0), make([]string, 0)},
+						CatMap: &CatMap{
+							Map:  make(map[string]int, 0),
+							Back: make([]string, 0),
+						},
 						CatData:      make([]int, 0),
 						Missing:      make([]bool, 0),
 						Name:         label,
@@ -444,7 +449,10 @@ func ParseFeature(record []string) Feature {
 		return f
 	case "B:", "C:", "T:":
 		f := &DenseCatFeature{
-			CatMap:       &CatMap{make(map[string]int, 0), make([]string, 0)},
+			CatMap: &CatMap{
+				Map:  make(map[string]int, 0),
+				Back: make([]string, 0),
+			},
 			CatData:      make([]int, 0, capacity),
 			Missing:      make([]bool, 0, capacity),
 			Name:         record[0],

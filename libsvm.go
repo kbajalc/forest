@@ -46,8 +46,10 @@ func ParseLibSVM(input io.Reader) *FeatureMatrix {
 			} else {
 				//doesn't look like a float...add dense catagorical
 				data = append(data, &DenseCatFeature{
-					&CatMap{make(map[string]int, 0),
-						make([]string, 0)},
+					&CatMap{
+						Map:  make(map[string]int, 0),
+						Back: make([]string, 0),
+					},
 					make([]int, 0),
 					make([]bool, 0),
 					name,
