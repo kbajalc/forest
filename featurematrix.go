@@ -442,7 +442,7 @@ func ParseFeature(record []string) Feature {
 			f.Append(record[i])
 		}
 		return f
-	case "B:", "C:":
+	case "B:", "C:", "T:":
 		f := &DenseCatFeature{
 			CatMap:       &CatMap{make(map[string]int, 0), make([]string, 0)},
 			CatData:      make([]int, 0, capacity),
