@@ -47,8 +47,8 @@ else:
 	# X = X.toarray()
 	score = clf.score(X, Y)
 	count = np.sum(clf.predict(X)==Y)
-	c1 = np.sum(clf.predict(X[Y==1])==Y[Y==1] )
-	c0 = np.sum(clf.predict(X[Y==0])==Y[Y==0] )
+	c1 = np.sum(clf.predict(X[Y==1])==Y[Y==1] ) # type: ignore
+	c0 = np.sum(clf.predict(X[Y==0])==Y[Y==0] ) # type: ignore
 	l = len(Y)
 	print("Testing Score: %s, %s / %s, %s, %s, %s "%(score, count, l,  c1, c0, (float(c1)/float(sum(Y==1))+float(c0)/float(sum(Y==0)))/2.0))
 pass

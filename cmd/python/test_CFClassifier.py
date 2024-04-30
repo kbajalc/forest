@@ -17,31 +17,31 @@ class TestCFClassifier(unittest.TestCase):
 		# and randomly permute it
 		iris = datasets.load_iris()
 		rng = check_random_state(0)
-		perm = rng.permutation(iris.target.size)
-		iris.data = iris.data[perm]
-		iris.target = iris.target[perm]
+		perm = rng.permutation(iris.target.size) # type: ignore
+		iris.data = iris.data[perm] # type: ignore
+		iris.target = iris.target[perm] # type: ignore
 
 		
 
 		clf = CFClassifier("")
-		clf.fit(iris.data, iris.target)
+		clf.fit(iris.data, iris.target) # type: ignore
 
 		self.assertTrue(os.path.isfile(clf.forest))
 
-		preds = clf.predict(iris.data)
+		preds = clf.predict(iris.data) # type: ignore
 
 
-		predicted_ratio = float(np.sum(preds==iris.target))/float(len(iris.target))
-		print predicted_ratio
+		predicted_ratio = float(np.sum(preds==iris.target))/float(len(iris.target)) # type: ignore
+		print predicted_ratio # type: ignore
 
 		self.assertGreaterEqual(predicted_ratio, .97) 
 
-		probs = clf.predict_proba(iris.data)
+		probs = clf.predict_proba(iris.data) # type: ignore
 
 
-		bin_idx=iris.target!=2
+		bin_idx=iris.target!=2 # type: ignore
 
-		roc_auc = roc_auc_score(iris.target[bin_idx], probs[bin_idx,1])
+		roc_auc = roc_auc_score(iris.target[bin_idx], probs[bin_idx,1]) # type: ignore
 
 		self.assertGreaterEqual(roc_auc, .97) 
 

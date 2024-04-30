@@ -139,7 +139,7 @@ class CFClassifier:
 		votes = 0
 
 		
-		line = fo.next()
+		line = fo.next() # type: ignore
 		vs = line.split()[1:]
 		if vs[0]=="True" or vs[0]=="False":
 			header = np.array([strtobool(v) for v in vs],dtype=bool)
