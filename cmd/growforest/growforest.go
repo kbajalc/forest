@@ -3,11 +3,12 @@ package main
 import (
 	"flag"
 
-	"ecg.mk/learn"
+	"ecg.mk/rfx"
 )
 
 func main() {
-	g := learn.GrowForestFlags("")
+	g := rfx.NewGrowForest()
+	g.Mount("")
 	flag.Parse()
 	g.Fit()
 }

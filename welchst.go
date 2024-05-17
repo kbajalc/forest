@@ -2,7 +2,7 @@
 Package stats currentelly only implements a welch's t-test for importance score analysis
 in CloudForest.
 */
-package learn
+package rfx
 
 import (
 	"math"

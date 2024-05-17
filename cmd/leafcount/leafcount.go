@@ -9,37 +9,43 @@ import (
 	"runtime"
 	"strings"
 
-	"ecg.mk/learn"
+	"ecg.mk/rfx"
 )
 
 func main() {
-	fm := flag.String("fm", "featurematrix.afm", "AFM formated feature matrix to use.")
-	rf := flag.String("rfpred", "rface.sf", "A predictor forest.")
-	outf := flag.String("leaves", "leaves.tsv", "a case by case sparse matrix of leaf co-occurrence in tsv format")
-	boutf := flag.String("branches", "", "a case by feature sparse matrix of leaf co-occurrence in tsv format")
-	soutf := flag.String("splits", "", "a file to write a json record of splite per feature")
-	var threads int
-	flag.IntVar(&threads, "threads", 1, "Parse seperate forests in n seperate threads.")
+	var fm = "featurematrix.afm"
+	var rf = "rface.sf"
+	var outf = "leaves.tsv"
+	var boutf = ""
+	var soutf = ""
+	var threads = 1
+
+	flag.StringVar(&fm, "fm", fm, "AFM formated feature matrix to use.")
+	flag.StringVar(&rf, "rfpred", rf, "A predictor forest.")
+	flag.String("leaves", outf, "a case by case sparse matrix of leaf co-occurrence in tsv format")
+	flag.String("branches", boutf, "a case by feature sparse matrix of leaf co-occurrence in tsv format")
+	flag.String("splits", soutf, "a file to write a json record of splite per feature")
+	flag.IntVar(&threads, "threads", threads, "Parse seperate forests in n seperate threads.")
 
 	flag.Parse()
 
 	splits := make(map[string][]string)
 
 	//Parse Data
-	data, err := learn.LoadAFM(*fm)
+	data, err := rfx.LoadAFM(fm)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	log.Print("Data file ", len(data.Data), " by ", data.Data[0].Length())
 
-	counts := new(learn.SparseCounter)
-	var caseFeatureCounts *learn.SparseCounter
-	if *boutf != "" {
-		caseFeatureCounts = new(learn.SparseCounter)
+	counts := new(rfx.SparseCounter)
+	var caseFeatureCounts *rfx.SparseCounter
+	if boutf != "" {
+		caseFeatureCounts = new(rfx.SparseCounter)
 	}
 
-	files := strings.Split(*rf, ",")
+	files := strings.Split(rf, ",")
 
 	runtime.GOMAXPROCS(threads)
 
@@ -62,7 +68,7 @@ func main() {
 					log.Fatal(err)
 				}
 				defer forestfile.Close()
-				forestreader := learn.NewForestReader(forestfile)
+				forestreader := rfx.NewForestReader(forestfile)
 				forest, err := forestreader.ReadForest()
 				if err != nil {
 					log.Fatal(err)
@@ -81,8 +87,8 @@ func main() {
 						}
 					}
 
-					if *soutf != "" {
-						forest.Trees[i].Root.Climb(func(n *learn.Node) {
+					if soutf != "" {
+						forest.Trees[i].Root.Climb(func(n *rfx.Node) {
 							if n.Splitter != nil {
 								name := n.Splitter.Feature
 								_, ok := splits[name]
@@ -117,16 +123,16 @@ func main() {
 	}
 
 	log.Print("Outputting Case Case  Co-Occurrence Counts")
-	outfile, err := os.Create(*outf)
+	outfile, err := os.Create(outf)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer outfile.Close()
 	counts.WriteTsv(outfile)
 
-	if *boutf != "" {
+	if boutf != "" {
 		log.Print("Outputting Case Feature Co-Occurrence Counts")
-		boutfile, err := os.Create(*boutf)
+		boutfile, err := os.Create(boutf)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -134,8 +140,8 @@ func main() {
 		caseFeatureCounts.WriteTsv(boutfile)
 	}
 
-	if *soutf != "" {
-		soutfile, err := os.Create(*soutf)
+	if soutf != "" {
+		soutfile, err := os.Create(soutf)
 		if err != nil {
 			log.Fatal(err)
 		}

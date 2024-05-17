@@ -1,4 +1,4 @@
-package learn
+package rfx
 
 const maxExhaustiveCats = 5
 const maxNonRandomExahustive = 10

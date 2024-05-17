@@ -1,4 +1,4 @@
-package learn
+package rfx
 
 /*
 RegretTarget wraps a categorical feature for use in regret driven classification.

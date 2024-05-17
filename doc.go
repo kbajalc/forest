@@ -1,5 +1,5 @@
 /*
-package learn implements ensembles of decision trees for machine
+package rfx implements ensembles of decision trees for machine
 learning in pure Go (golang to search engines). It allows for a number of related algorithms
 for classification, regression, feature selection and structure analysis on heterogeneous
 numerical/categorical data with missing values. These include:
@@ -203,4 +203,4 @@ but it may be faster to grow the forest to disk as in the growforest utility.
 Prediction and Voting is done using Tree.Vote and CatBallotBox and NumBallotBox which implement the
 VoteTallyer interface.
 */
-package learn
+package rfx

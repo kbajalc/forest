@@ -4,7 +4,7 @@ all less function and many swaps inlined to sort a list of ints by an acompanyin
 of floats as needed in random forest training. It is about 30-40% faster then the
 standard sort.
 */
-package learn
+package rfx
 
 // SortBy will sort the values in cases and vals by the values in vals in increasing order.
 // If vals is longer then cases only the coresponding section will be sorted.

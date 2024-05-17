@@ -1,4 +1,4 @@
-package learn
+package rfx
 
 /*
 TransTarget is used for semi supervised transduction trees [1] that balance compine supervised impurity with

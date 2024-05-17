@@ -8,7 +8,7 @@ import (
 	"log"
 	"os"
 
-	"ecg.mk/learn"
+	"ecg.mk/rfx"
 )
 
 func openfiles(trainfn string, testfn string) (trainW io.WriteCloser, testW io.WriteCloser) {
@@ -41,21 +41,24 @@ func openfiles(trainfn string, testfn string) (trainW io.WriteCloser, testW io.W
 }
 
 func main() {
-	fm := flag.String("fm",
-		"featurematrix.afm", "AFM formated feature matrix containing data.")
+	var fm = "featurematrix.afm"
+	flag.StringVar(&fm, "fm", fm, "AFM formated feature matrix containing data.")
 
-	blacklist := flag.String("blacklist",
-		"", "A list of feature id's to exclude from the set of predictors.")
+	var blacklist = ""
+	flag.StringVar(&blacklist, "blacklist", blacklist, "A list of feature id's to exclude from the set of predictors.")
 
-	targetname := flag.String("target",
-		"", "The row header of the target in the feature matrix.")
-	train := flag.String("train",
-		"train_%v.fm", "Format string for training fms.")
-	test := flag.String("test",
-		"test_%v.fm", "Format string for testing fms.")
+	var targetname = ""
+	flag.StringVar(&targetname, "target", targetname, "The row header of the target in the feature matrix.")
+
+	var train = "train_%v.fm"
+	flag.StringVar(&train, "train", train, "Format string for training fms.")
+
+	var test = "test_%v.fm"
+	flag.StringVar(&test, "test", test, "Format string for testing fms.")
 
 	// var zipoutput bool
 	// flag.BoolVar(&zipoutput, "zip", false, "Output ziped files.")
+
 	var unstratified bool
 	flag.BoolVar(&unstratified, "unstratified", false, "Force unstratified sampeling of categorical target.")
 
@@ -86,16 +89,16 @@ func main() {
 	flag.Parse()
 
 	//Parse Data
-	data, err := learn.LoadAFM(*fm)
+	data, err := rfx.LoadAFM(fm)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	blacklisted := 0
 	blacklistis := make([]bool, len(data.Data))
-	if *blacklist != "" {
-		fmt.Printf("Loading blacklist from: %v\n", *blacklist)
-		blackfile, err := os.Open(*blacklist)
+	if blacklist != "" {
+		fmt.Printf("Loading blacklist from: %v\n", blacklist)
+		blackfile, err := os.Open(blacklist)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -108,7 +111,7 @@ func main() {
 			} else if err != nil {
 				log.Fatal(err)
 			}
-			if id[0] == *targetname {
+			if id[0] == targetname {
 				continue
 			}
 			i, ok := data.Map[id[0]]
@@ -124,7 +127,7 @@ func main() {
 		blackfile.Close()
 	}
 
-	newdata := make([]learn.Feature, 0, len(data.Data)-blacklisted)
+	newdata := make([]rfx.Feature, 0, len(data.Data)-blacklisted)
 	newmap := make(map[string]int, len(data.Data)-blacklisted)
 
 	for i, f := range data.Data {
@@ -160,11 +163,11 @@ func main() {
 		foldis = append(foldis, make([]int, 0, foldsize))
 	}
 
-	var targetf learn.Feature
+	var targetf rfx.Feature
 
 	//find the target feature
-	fmt.Printf("Target : %v\n", *targetname)
-	targeti, ok := data.Map[*targetname]
+	fmt.Printf("Target : %v\n", targetname)
+	targeti, ok := data.Map[targetname]
 	if !ok {
 		fmt.Println("Target not found in data, doing unstratified sampeling.")
 		unstratified = true
@@ -174,7 +177,7 @@ func main() {
 		targetf = data.Data[targeti]
 
 		switch targetf.(type) {
-		case *learn.DenseNumFeature:
+		case *rfx.DenseNumFeature:
 			unstratified = true
 		}
 	}
@@ -184,7 +187,7 @@ func main() {
 		for i := 0; i < ncases; i++ {
 			cases[i] = i
 		}
-		learn.SampleFirstN(&cases, nil, len(cases), 0)
+		rfx.SampleFirstN(&cases, nil, len(cases), 0)
 		for j := 0; j < folds; j++ {
 			for k := j * foldsize; k < (j+1)*foldsize; k++ {
 				foldis[j] = append(foldis[j], cases[k])
@@ -192,15 +195,15 @@ func main() {
 		}
 	} else {
 		//sample folds stratified by case
-		fmt.Printf("Stratifying by %v classes.\n", targetf.(*learn.DenseCatFeature).NCats())
-		bSampler := learn.NewBalancedSampler(targetf.(*learn.DenseCatFeature))
+		fmt.Printf("Stratifying by %v classes.\n", targetf.(*rfx.DenseCatFeature).NCats())
+		bSampler := rfx.NewBalancedSampler(targetf.(*rfx.DenseCatFeature))
 
 		fmt.Printf("Stratifying by %v classes.\n", len(bSampler.Cases))
 		var samples []int
 		for i := 0; i < len(bSampler.Cases); i++ {
 			fmt.Printf("%v cases in class %v.\n", len(bSampler.Cases[i]), i)
 			//shuffle in place
-			learn.SampleFirstN(&bSampler.Cases[i], &samples, len(bSampler.Cases[i]), 0)
+			rfx.SampleFirstN(&bSampler.Cases[i], &samples, len(bSampler.Cases[i]), 0)
 			stratFoldSize := len(bSampler.Cases[i]) / folds
 			for j := 0; j < folds; j++ {
 				for k := j * stratFoldSize; k < (j+1)*stratFoldSize; k++ {
@@ -226,8 +229,8 @@ func main() {
 	trainis := make([]int, 0, foldsize*(folds-1))
 	//Write training and testing matrixes
 	for i := 0; i < folds; i++ {
-		trainfn := fmt.Sprintf(*train, i)
-		testfn := fmt.Sprintf(*test, i)
+		trainfn := fmt.Sprintf(train, i)
+		testfn := fmt.Sprintf(test, i)
 
 		trainis = trainis[0:0]
 		for j := 0; j < folds; j++ {
@@ -238,8 +241,8 @@ func main() {
 
 		if writearff || writeall {
 			trainW, testW := openfiles(trainfn+".arff", testfn+".arff")
-			learn.WriteArffCases(data, foldis[i], *targetname, testW)
-			learn.WriteArffCases(data, trainis, *targetname, trainW)
+			rfx.WriteArffCases(data, foldis[i], targetname, testW)
+			rfx.WriteArffCases(data, trainis, targetname, trainW)
 		}
 
 		if ((!writelibsvm) && (!writearff)) || writeall {
@@ -250,8 +253,8 @@ func main() {
 
 		if writelibsvm || writeall {
 			trainW, testW := openfiles(trainfn+".libsvm", testfn+".libsvm")
-			learn.WriteLibSvmCases(encoded, foldis[i], *targetname, testW)
-			learn.WriteLibSvmCases(encoded, trainis, *targetname, trainW)
+			rfx.WriteLibSvmCases(encoded, foldis[i], targetname, testW)
+			rfx.WriteLibSvmCases(encoded, trainis, targetname, trainW)
 		}
 
 		fmt.Printf("Wrote fold %v. %v testing cases and %v training cases.\n", i, len(foldis[i]), len(trainis))

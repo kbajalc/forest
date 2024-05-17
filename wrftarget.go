@@ -1,4 +1,4 @@
-package learn
+package rfx
 
 /*
 WRFTarget wraps a numerical feature as a target for us weigted random forest.

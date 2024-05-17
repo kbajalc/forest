@@ -1,4 +1,4 @@
-package learn
+package rfx
 
 // VoteTallyer  is used to tabulate votes by trees and is implemented by feature type specific
 // structs like NumBallotBox and CatBallotBox.

@@ -1,4 +1,4 @@
-package learn
+package rfx
 
 /*
 GradBoostTarget wraps a numerical feature as a target for us in Gradiant Boosting Trees.

@@ -1,4 +1,4 @@
-package learn
+package rfx
 
 import (
 	"encoding/csv"
@@ -225,35 +225,26 @@ func NewGrowForest() *GrowForest {
 		NP_a:       0.1,
 		NP_k:       100,
 	}
-
 	return &g
 }
 
-func (g *GrowForest) Apply(train string, target string, trees int) *GrowForest {
-
-	// "-oob",
-	// "-save", "./work/output/terma/qtdb/rfx/qtdb.model.sf",
-	// "-cpuprofile", "./work/output/terma/qtdb/rfx/qtdb.prof",
-	// "-importance", "./work/output/terma/qtdb/rfx/qtdb.imp.csv",
-	// "-oobpreds", "./work/output/terma/qtdb/rfx/qtdb.oob.csv",
-	// "-selftest",
-
-	if trees > 0 {
-		g.Trees = trees
-	}
-
+func (g *GrowForest) Apply(train string, target string, test string) *GrowForest {
 	g.TrainFile = train
 	g.TargetName = target
+	g.TestFile = test
 
-	pref := strings.TrimSuffix(train, ".csv")
+	if g.TestFile != "" {
+		g.SelfTest = true
+	}
+
+	pref := strings.TrimSuffix(train, ".tsv")
 	pref = strings.TrimSuffix(pref, ".fm")
 
 	g.Cores = runtime.NumCPU()
 	g.OOB = true
-	g.SelfTest = true
 	g.ForestFile = pref + ".model.sf"
-	g.Importance = pref + ".imp.csv"
-	g.CaseOOB = pref + ".oob.csv"
+	g.Importance = pref + ".imp.tsv"
+	g.CaseOOB = pref + ".oob.tsv"
 
 	return g
 }
@@ -263,205 +254,201 @@ func (gf *GrowForest) Clone() *GrowForest {
 	return &copy
 }
 
-func GrowForestFlags(px string) *GrowForest {
-	g := NewGrowForest()
-
+func (gf *GrowForest) Mount(px string) {
 	// ========================================================================================================
 	// GENERAL OPTIONS
 
 	// nCores int
-	flag.IntVar(&g.Cores, px+"cores", 1, "The number of cores to use.")
+	flag.IntVar(&gf.Cores, px+"cores", gf.Cores, "The number of cores to use.")
 
 	// oob bool
-	flag.BoolVar(&g.OOB, px+"oob", false, "Calculate and report oob error.")
+	flag.BoolVar(&gf.OOB, px+"oob", gf.OOB, "Calculate and report oob error.")
 
 	// ace int
-	flag.IntVar(&g.Ace, px+"ace", 0, "Number ace permutations to do. Output ace style importance and p values.")
+	flag.IntVar(&gf.Ace, px+"ace", gf.Ace, "Number ace permutations to do. Output ace style importance and p values.")
 
 	// cutoff float64
-	flag.Float64Var(&g.Cutoff, px+"cutoff", 0.0, "P-value cutoff to apply to features for last forest after ACE.")
+	flag.Float64Var(&gf.Cutoff, px+"cutoff", gf.Cutoff, "P-value cutoff to apply to features for last forest after ACE.")
 
 	// progress bool
-	flag.BoolVar(&g.Progress, px+"progress", false, "Report tree number and running oob error.")
+	flag.BoolVar(&gf.Progress, px+"progress", gf.Progress, "Report tree number and running oob error.")
 
 	// multiboost bool
-	flag.BoolVar(&g.Multiboost, px+"multiboost", false, "Allow multi-threaded boosting which may have unexpected results. (highly experimental)")
+	flag.BoolVar(&gf.Multiboost, px+"multiboost", gf.Multiboost, "Allow multi-threaded boosting which may have unexpected results. (highly experimental)")
 
 	// noseed bool
-	flag.BoolVar(&g.NoSeed, px+"noseed", false, "Don't seed the random number generator from time.")
+	flag.BoolVar(&gf.NoSeed, px+"noseed", gf.NoSeed, "Don't seed the random number generator from time.")
 
 	// ========================================================================================================
 	// FEATURE MATRIX
 
 	// fm string
-	flag.StringVar(&g.TrainFile, px+"train", "", "AFM formated feature matrix containing training data.")
+	flag.StringVar(&gf.TrainFile, px+"train", gf.TrainFile, "AFM formated feature matrix containing training data.")
 
 	// targetname string
-	flag.StringVar(&g.TargetName, px+"target", "", "The row header of the target in the feature matrix.")
+	flag.StringVar(&gf.TargetName, px+"target", gf.TargetName, "The row header of the target in the feature matrix.")
 
 	// nContrasts int
-	flag.IntVar(&g.Contrasts, px+"contrasts", 0, "The number of randomized artificial contrast features to include in the feature matrix.")
+	flag.IntVar(&gf.Contrasts, px+"contrasts", gf.Contrasts, "The number of randomized artificial contrast features to include in the feature matrix.")
 
 	// contrastAll bool
-	flag.BoolVar(&g.ContrastAll, px+"contrastall", false, "Include a shuffled artificial contrast copy of every feature.")
+	flag.BoolVar(&gf.ContrastAll, px+"contrastall", gf.ContrastAll, "Include a shuffled artificial contrast copy of every feature.")
 
 	// blacklist string
-	flag.StringVar(&g.Blacklist, px+"blacklist", "", "A list of feature id's to exclude from the set of predictors.")
+	flag.StringVar(&gf.Blacklist, px+"blacklist", gf.Blacklist, "A list of feature id's to exclude from the set of predictors.")
 
 	// blockRE string
-	flag.StringVar(&g.BlockRE, px+"blockRE", "", "A regular expression to identify features that should be filtered out.")
+	flag.StringVar(&gf.BlockRE, px+"blockRE", gf.BlockRE, "A regular expression to identify features that should be filtered out.")
 
 	// includeRE string
-	flag.StringVar(&g.IncludeRE, px+"includeRE", "", "Filter features that DON'T match this RE.")
+	flag.StringVar(&gf.IncludeRE, px+"includeRE", gf.IncludeRE, "Filter features that DON'T match this RE.")
 
 	// impute bool
-	flag.BoolVar(&g.Impute, px+"impute", false, "Impute missing values to feature mean/mode before growth.")
+	flag.BoolVar(&gf.Impute, px+"impute", gf.Impute, "Impute missing values to feature mean/mode before growth.")
 
 	// permutate bool
-	flag.BoolVar(&g.Permute, px+"permute", false, "Permute the target feature (to establish random predictive power).")
+	flag.BoolVar(&gf.Permute, px+"permute", gf.Permute, "Permute the target feature (to establish random predictive power).")
 
 	// shuffleRE string
-	flag.StringVar(&g.ShuffleRE, px+"shuffleRE", "", "A regular expression to identify features that should be shuffled.")
+	flag.StringVar(&gf.ShuffleRE, px+"shuffleRE", gf.ShuffleRE, "A regular expression to identify features that should be shuffled.")
 
 	// balance bool
-	flag.BoolVar(&g.Balance, px+"balance", false, "Balance bagging of samples by target class for unbalanced classification.")
+	flag.BoolVar(&gf.Balance, px+"balance", gf.Balance, "Balance bagging of samples by target class for unbalanced classification.")
 
 	// balanceby string
-	flag.StringVar(&g.BalanceBy, px+"balanceby", "", "Roughly balanced bag the target within each class of this feature.")
+	flag.StringVar(&gf.BalanceBy, px+"balanceby", gf.BalanceBy, "Roughly balanced bag the target within each class of this feature.")
 
 	// ========================================================================================================
 	// FOREST OPTIONS
 
 	// nTrees int
-	flag.IntVar(&g.Trees, px+"trees", 100, "Number of trees to grow in the predictor.")
+	flag.IntVar(&gf.Trees, px+"trees", gf.Trees, "Number of trees to grow in the predictor.")
 
 	// jungle bool
-	flag.BoolVar(&g.Jungle, px+"jungle", false, "Grow unserializable and experimental decision jungle with node recombination.")
+	flag.BoolVar(&gf.Jungle, px+"jungle", gf.Jungle, "Grow unserializable and experimental decision jungle with node recombination.")
 
 	// nobag bool
-	flag.BoolVar(&g.NoBag, px+"nobag", false, "Don't bag samples for each tree.")
+	flag.BoolVar(&gf.NoBag, px+"nobag", gf.NoBag, "Don't bag samples for each tree.")
 
 	// StringmTry string
-	flag.StringVar(&g.MTry, px+"mTry", "0", "Number of candidate features for each split as a count (ex: 10) or portion of total (ex: .5). Ceil(sqrt(nFeatures)) if <=0.")
+	flag.StringVar(&gf.MTry, px+"mtry", gf.MTry, "Number of candidate features for each split as a count (ex: 10) or portion of total (ex: .5). Ceil(sqrt(nFeatures)) if <=0.")
 
 	// StringleafSize string
-	flag.StringVar(&g.LeafSize, px+"leafSize", "0", "The minimum number of cases on a leaf node. If <=0 will be inferred to 1 for classification 4 for regression.")
+	flag.StringVar(&gf.LeafSize, px+"leaf-size", gf.LeafSize, "The minimum number of cases on a leaf node. If <=0 will be inferred to 1 for classification 4 for regression.")
 
 	// StringnSamples string
-	flag.StringVar(&g.NSamples, px+"nSamples", "0", "The number of cases to sample (with replacement) for each tree as a count (ex: 10) or portion of total (ex: .5). If <=0 set to total number of cases.")
+	flag.StringVar(&gf.NSamples, px+"nsamples", gf.NSamples, "The number of cases to sample (with replacement) for each tree as a count (ex: 10) or portion of total (ex: .5). If <=0 set to total number of cases.")
 
 	// maxDepth int
-	flag.IntVar(&g.MaxDepth, px+"maxDepth", 0, "Maximum tree depth. Ignored if 0.")
+	flag.IntVar(&gf.MaxDepth, px+"max-depth", gf.MaxDepth, "Maximum tree depth. Ignored if 0.")
 
 	// splitmissing bool
-	flag.BoolVar(&g.SplitMissing, px+"splitmissing", false, "Split missing values onto a third branch at each node (experimental).")
+	flag.BoolVar(&gf.SplitMissing, px+"split-missing", gf.SplitMissing, "Split missing values onto a third branch at each node (experimental).")
 
 	// force bool
-	flag.BoolVar(&g.Force, px+"force", false, "Force at least one non constant feature to be tested for each split.")
+	flag.BoolVar(&gf.Force, px+"force", gf.Force, "Force at least one non constant feature to be tested for each split.")
 
 	// vet bool
-	flag.BoolVar(&g.Vet, px+"vet", false, "Penalize potential splitter impurity decrease by subtracting the best split of a permuted target.")
+	flag.BoolVar(&gf.Vet, px+"vet", gf.Vet, "Penalize potential splitter impurity decrease by subtracting the best split of a permuted target.")
 
 	// evaloob bool
-	flag.BoolVar(&g.EvalOOB, px+"evaloob", false, "Evaluate potential splitting features on OOB cases after finding split value in bag.")
+	flag.BoolVar(&gf.EvalOOB, px+"evaloob", gf.EvalOOB, "Evaluate potential splitting features on OOB cases after finding split value in bag.")
 
 	// extra bool
-	flag.BoolVar(&g.Extra, px+"extra", false, "Grow Extra Random Trees (supports learning from numerical variables only).")
+	flag.BoolVar(&gf.Extra, px+"extra", gf.Extra, "Grow Extra Random Trees (supports learning from numerical variables only).")
 
 	// ========================================================================================================
 	// DENSITY
 
-	flag.BoolVar(&g.Density, px+"density", false, "Build density estimating trees instead of classification/regression trees.")
+	flag.BoolVar(&gf.Density, px+"density", gf.Density, "Build density estimating trees instead of classification/regression trees.")
 
 	// ========================================================================================================
 	// REGRESSION
 
 	// - Using l1/absolute deviance error.
-	flag.BoolVar(&g.UseL1, px+"l1", false, "Use l1 norm regression (target must be numeric).")
+	flag.BoolVar(&gf.UseL1, px+"l1", gf.UseL1, "Use l1 norm regression (target must be numeric).")
 
 	// ordinal bool
-	flag.BoolVar(&g.UseOrdinal, px+"ordinal", false, "Use ordinal regression (target must be numeric).")
+	flag.BoolVar(&gf.UseOrdinal, px+"ordinal", gf.UseOrdinal, "Use ordinal regression (target must be numeric).")
 
 	// ========================================================================================================
 	// CLASIFICATION
 
 	// NP bool
-	flag.BoolVar(&g.UseNP, px+"NP", false, "Use approximate Neyman-Pearson classification.")
+	flag.BoolVar(&gf.UseNP, px+"NP", gf.UseNP, "Use approximate Neyman-Pearson classification.")
 
 	// NP_pos string
-	flag.StringVar(&g.NP_pos, px+"NP-pos", "1", "Class label to constrain percision in NP classification.")
+	flag.StringVar(&gf.NP_pos, px+"NP-pos", gf.NP_pos, "Class label to constrain percision in NP classification.")
 
 	// NP_a float64
-	flag.Float64Var(&g.NP_a, px+"NP-a", 0.1, "Constraint on percision in NP classification [0,1]")
+	flag.Float64Var(&gf.NP_a, px+"NP-a", gf.NP_a, "Constraint on percision in NP classification [0,1]")
 
 	// NP_k float64
-	flag.Float64Var(&g.NP_k, px+"NP-k", 100, "Weight of constraint in NP classification [0,Inf+)")
+	flag.Float64Var(&gf.NP_k, px+"NP-k", gf.NP_k, "Weight of constraint in NP classification [0,Inf+)")
 
 	// entropy bool
-	flag.BoolVar(&g.UseEntropy, px+"entropy", false, "Use entropy minimizing classification (target must be categorical).")
+	flag.BoolVar(&gf.UseEntropy, px+"entropy", gf.UseEntropy, "Use entropy minimizing classification (target must be categorical).")
 
 	// costs string
-	flag.StringVar(&g.UseCosts, px+"cost", "", "For categorical targets, a json string to float map of the cost of falsely identifying each category.")
+	flag.StringVar(&gf.UseCosts, px+"cost", gf.UseCosts, "For categorical targets, a json string to float map of the cost of falsely identifying each category.")
 
 	// dentropy string
-	flag.StringVar(&g.UseDentropy, px+"dentropy", "", "Class disutilities for disutility entropy.")
+	flag.StringVar(&gf.UseDentropy, px+"dentropy", gf.UseDentropy, "Class disutilities for disutility entropy.")
 
 	// rfweights string
-	flag.StringVar(&g.UseRfWeights, px+"rfweights", "", "For categorical targets, a json string to float map of the weights to use for each category in Weighted RF.")
+	flag.StringVar(&gf.UseRfWeights, px+"rfweights", gf.UseRfWeights, "For categorical targets, a json string to float map of the weights to use for each category in Weighted RF.")
 
 	// adacosts string
-	flag.StringVar(&g.UseAdaCosts, px+"adacost", "", "Json costs for cost sentive AdaBoost.")
+	flag.StringVar(&gf.UseAdaCosts, px+"adacost", gf.UseAdaCosts, "Json costs for cost sentive AdaBoost.")
 
 	// adaboost bool
-	flag.BoolVar(&g.UseAdaBoost, px+"adaboost", false, "Use Adaptive boosting for regression/classification.")
+	flag.BoolVar(&gf.UseAdaBoost, px+"adaboost", gf.UseAdaBoost, "Use Adaptive boosting for regression/classification.")
 
 	// hellinger bool
-	flag.BoolVar(&g.UseHellinger, px+"hellinger", false, "Build trees using hellinger distance.")
+	flag.BoolVar(&gf.UseHellinger, px+"hellinger", gf.UseHellinger, "Build trees using hellinger distance.")
 
 	// positive string
-	flag.StringVar(&g.Positive, px+"positive", "True", "Positive class to output probabilities for.")
+	flag.StringVar(&gf.Positive, px+"positive", gf.Positive, "Positive class to output probabilities for.")
 
 	// gradboost float64
-	flag.Float64Var(&g.UseGradBoost, px+"gbt", 0.0, "Use gradient boosting with the specified learning rate.")
+	flag.Float64Var(&gf.UseGradBoost, px+"gbt", gf.UseGradBoost, "Use gradient boosting with the specified learning rate.")
 
 	// unlabeled string
-	flag.StringVar(&g.TransUnlabeled, px+"trans-unlabeled", "", "Class to treat as unlabeled for transduction forests.")
+	flag.StringVar(&gf.TransUnlabeled, px+"trans-unlabeled", gf.TransUnlabeled, "Class to treat as unlabeled for transduction forests.")
 
 	// trans_alpha float64
-	flag.Float64Var(&g.TransAlpha, px+"trans-alpha", 10.0, "Weight of unsupervised term in transduction impurity.")
+	flag.Float64Var(&gf.TransAlpha, px+"trans-alpha", gf.TransAlpha, "Weight of unsupervised term in transduction impurity.")
 
 	// trans_beta float64
-	flag.Float64Var(&g.TransBeta, px+"trans-beta", 0.0, "Multiple to penalize unlabeled class by.")
+	flag.Float64Var(&gf.TransBeta, px+"trans-beta", gf.TransBeta, "Multiple to penalize unlabeled class by.")
 
 	// ========================================================================================================
 	// TESTING
 
 	// testfm string
-	flag.StringVar(&g.TestFile, px+"test", "", "Data to test the model on.")
+	flag.StringVar(&gf.TestFile, px+"test", gf.TestFile, "Data to test the model on.")
 
 	// dotest bool
-	flag.BoolVar(&g.SelfTest, px+"selftest", false, "Test the forest on the data and report accuracy.")
+	flag.BoolVar(&gf.SelfTest, px+"selftest", gf.SelfTest, "Test the forest on the data and report accuracy.")
 
 	// caseoob string
-	flag.StringVar(&g.CaseOOB, px+"oobpreds", "", "Calculate and report oob predictions in the file specified.")
+	flag.StringVar(&gf.CaseOOB, px+"oobpreds", gf.CaseOOB, "Calculate and report oob predictions in the file specified.")
 
 	// ========================================================================================================
 	// OUTOUT
 
 	// rf string
-	flag.StringVar(&g.ForestFile, px+"save", "", "File name to output predictor forest in sf format.")
-	flag.StringVar(&g.ForestFile, px+"rfpred", "", "File name to output predictor forest in sf format.")
+	flag.StringVar(&gf.ForestFile, px+"save", gf.ForestFile, "File name to output predictor forest in sf format.")
+	flag.StringVar(&gf.ForestFile, px+"rfpred", gf.ForestFile, "File name to output predictor forest in sf format.")
 
 	// imp string
-	flag.StringVar(&g.Importance, px+"importance", "", "File name to output importance.")
+	flag.StringVar(&gf.Importance, px+"importance", gf.Importance, "File name to output importance.")
 
 	// cpuprofile string
-	flag.StringVar(&g.CpuProfile, px+"cpuprofile", "", "write cpu profile to file")
+	flag.StringVar(&gf.CpuProfile, px+"cpuprofile", gf.CpuProfile, "write cpu profile to file")
 
 	// scikitforest string
-	flag.StringVar(&g.ScikitForest, px+"scikitforest", "", "Write out a (partially complete) scikit style forest in json.")
-
-	return g
+	flag.StringVar(&gf.ScikitForest, px+"scikitforest", gf.ScikitForest, "Write out a (partially complete) scikit style forest in json.")
 }
 
 func (g *GrowForest) Fit() {
@@ -1115,6 +1102,9 @@ func (g *GrowForest) Fit() {
 	}
 
 	trainingEnd := time.Now()
+	if g.Progress {
+		fmt.Println("--------------------------------------------------------------------")
+	}
 	fmt.Printf("= Total training time (seconds): %v\n", trainingEnd.Sub(trainingStart).Seconds())
 
 	if g.OOB {
@@ -1167,7 +1157,7 @@ func (g *GrowForest) Fit() {
 			// Write standard importance file
 			// Header: Feature | Decrease Per Use | Use Count | Decrease Per Tree | Decrease Per Tree Used | Tree Used Count | Mean Minimal Depth
 			fmt.Println("\n--------------------------------------------------------------------")
-			fmt.Printf("Feature         Dr/Use    Used   Dr/Tree   Dr/TreeU   TreeU   MMinDp\n")
+			fmt.Printf("Feature         Dc/Use    Used   Dc/Tree   Dc/TreeU   TreeU   MMinDp\n")
 			fmt.Println("--------------------------------------------------------------------")
 
 			fmt.Fprintf(impfile, "Feature\tDecrease Per Use\tUse Count\tDecrease Per Tree\tDecrease Per Tree Used\tTree Used Count\tMean Minimal Depth\n")
@@ -1257,6 +1247,8 @@ func (g *GrowForest) Fit() {
 			}
 
 			fmt.Printf("= Classified: %v / %v = %.3f\n", correct, length, float64(correct)*100/float64(length))
+
+			// fmt.Println()
 			// for i, v := range testtarget.(*DenseCatFeature).Back {
 			// 	fmt.Printf("- Label [%v] Percision (Actuall/Predicted): %v / %v = %.3f\n", v, false_pos[i], predtotals[i], float64(false_pos[i])*100/float64(predtotals[i]))
 			// 	falses := reftotals[i] - true_pos[i]

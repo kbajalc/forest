@@ -9,7 +9,7 @@ import (
 	"os"
 	"strings"
 
-	"ecg.mk/learn"
+	"ecg.mk/rfx"
 )
 
 func main() {
@@ -31,7 +31,7 @@ func main() {
 	flag.Parse()
 
 	//Parse Data
-	data, err := learn.LoadAFM(*fm)
+	data, err := rfx.LoadAFM(*fm)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -69,7 +69,7 @@ func main() {
 		blackfile.Close()
 	}
 
-	newdata := make([]learn.Feature, 0, len(data.Data)-blacklisted)
+	newdata := make([]rfx.Feature, 0, len(data.Data)-blacklisted)
 	newmap := make(map[string]int, len(data.Data)-blacklisted)
 
 	for i, f := range data.Data {
@@ -90,13 +90,13 @@ func main() {
 	//anotate with type information
 	for _, f := range data.Data {
 		switch f.(type) {
-		case *learn.DenseNumFeature:
-			nf := f.(*learn.DenseNumFeature)
+		case *rfx.DenseNumFeature:
+			nf := f.(*rfx.DenseNumFeature)
 			if !strings.HasPrefix(nf.Name, "N:") {
 				nf.Name = "N:" + nf.Name
 			}
-		case *learn.DenseCatFeature:
-			nf := f.(*learn.DenseCatFeature)
+		case *rfx.DenseCatFeature:
+			nf := f.(*rfx.DenseCatFeature)
 			if !(strings.HasPrefix(nf.Name, "C:") || strings.HasPrefix(nf.Name, "B:")) {
 				nf.Name = "C:" + nf.Name
 			}
@@ -138,14 +138,14 @@ func main() {
 		// for i := 0; i < target.Length(); i++ {
 		// 	entries := make([]string, 0, 10)
 		// 	switch target.(type) {
-		// 	case learn.NumFeature:
+		// 	case rfx.NumFeature:
 		// 		entries = append(entries, target.GetStr(i))
-		// 	case learn.CatFeature:
-		// 		entries = append(entries, fmt.Sprintf("%v", target.(learn.CatFeature).Geti(i)))
+		// 	case rfx.CatFeature:
+		// 		entries = append(entries, fmt.Sprintf("%v", target.(rfx.CatFeature).Geti(i)))
 		// 	}
 
 		// 	for j, f := range encodedfm.Data {
-		// 		v := f.(learn.NumFeature).Get(i)
+		// 		v := f.(rfx.NumFeature).Get(i)
 		// 		if v != 0.0 {
 		// 			entries = append(entries, fmt.Sprintf("%v:%v", j+1, v))
 		// 		}
@@ -158,7 +158,7 @@ func main() {
 
 		// }
 		// oucsv.Flush()
-		err = learn.WriteLibSvm(data, *libsvmtarget, outfile)
+		err = rfx.WriteLibSvm(data, *libsvmtarget, outfile)
 		if err != nil {
 			log.Fatalf("Error writing libsvm:\n%v", err)
 		}
