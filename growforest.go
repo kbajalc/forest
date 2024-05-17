@@ -797,7 +797,7 @@ func (g *GrowForest) Fit() {
 
 	var forestwriter *ForestWriter
 	if g.ForestFile != "" {
-		fmt.Printf("> Model: %s\n", g.ForestFile)
+		fmt.Printf("> Forest: %s\n", g.ForestFile)
 		forestfile, err := os.Create(g.ForestFile)
 		if err != nil {
 			log.Fatal(err)
@@ -1134,6 +1134,7 @@ func (g *GrowForest) Fit() {
 			log.Fatal(err)
 		}
 		defer caseoobfile.Close()
+		fmt.Fprintf(caseoobfile, "%v\t%v\t%v\n", ".", "Result", "Actual")
 		for i := 0; i < unboostedTarget.Length(); i++ {
 			fmt.Fprintf(caseoobfile, "%v\t%v\t%v\n", data.Cases[i], oobVotes.Tally(i), unboostedTarget.GetStr(i))
 		}
@@ -1176,7 +1177,6 @@ func (g *GrowForest) Fit() {
 	}
 
 	if g.SelfTest {
-		var bb VoteTallyer
 		fmt.Println()
 
 		testdata := data
@@ -1199,27 +1199,29 @@ func (g *GrowForest) Fit() {
 			}
 		}
 
+		var tally VoteTallyer
 		if unboostedTarget.NCats() == 0 {
 			//regression
-			bb = NewNumBallotBox(testdata.Data[0].Length())
+			tally = NewNumBallotBox(testdata.Data[0].Length())
 		} else {
 			//classification
-			bb = NewCatBallotBox(testdata.Data[0].Length())
+			tally = NewCatBallotBox(testdata.Data[0].Length())
 		}
 
+		// Trees execution
 		for _, tree := range trees {
-			tree.Vote(testdata, bb)
+			tree.Vote(testdata, tally)
 		}
 
-		fmt.Printf("= Error: %v\n", bb.TallyError(testtarget))
+		fmt.Printf("= Error: %v\n", tally.TallyError(testtarget))
 
 		if testtarget.NCats() != 0 {
-			reftotals := make([]int, testtarget.NCats())
-			predtotals := make([]int, testtarget.NCats())
+			reftotals := make([]int, testtarget.NCats()*2)
+			predtotals := make([]int, testtarget.NCats()*2)
 
-			true_pos := make([]int, testtarget.NCats())
-			false_pos := make([]int, testtarget.NCats())
-			false_neg := make([]int, testtarget.NCats())
+			true_pos := make([]int, testtarget.NCats()*2)
+			false_pos := make([]int, testtarget.NCats()*2)
+			false_neg := make([]int, testtarget.NCats()*2)
 
 			correct := 0
 			errors := 0
@@ -1228,21 +1230,23 @@ func (g *GrowForest) Fit() {
 			for i := 0; i < length; i++ {
 				refi := testtarget.(*DenseCatFeature).Geti(i)
 				reftotals[refi]++
-				pred := bb.Tally(i)
+				pred := tally.Tally(i)
 				orig := testtarget.GetStr(i)
+
 				if pred == "NA" {
 					nas++
+					continue
+				}
+
+				predi := testtarget.(*DenseCatFeature).CatToNum(pred)
+				predtotals[predi]++
+				if pred == orig {
+					correct++
+					true_pos[refi]++
 				} else {
-					predi := testtarget.(*DenseCatFeature).CatToNum(pred)
-					predtotals[predi]++
-					if pred == orig {
-						correct++
-						true_pos[refi]++
-					} else {
-						errors++
-						false_pos[predi]++
-						false_neg[refi]++
-					}
+					errors++
+					false_pos[predi]++
+					false_neg[refi]++
 				}
 			}
 

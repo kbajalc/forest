@@ -30,8 +30,7 @@ ForestReader.ReadForest reads the next forest from the underlying reader.
 If io.EOF or another error is encountered it returns that.
 */
 func (fr *ForestReader) ReadForest() (forest *Forest, err error) {
-	peek := []byte(" ")
-	peek, err = fr.br.Peek(1)
+	peek, err := fr.br.Peek(1)
 	if err != nil {
 		return
 	}
@@ -75,8 +74,8 @@ encountered it returns that as well as any partially parsed structs.
 func (fr *ForestReader) ReadTree() (tree *Tree, forest *Forest, err error) {
 	intree := false
 	line := ""
-	peek := []byte(" ")
 	for {
+		var peek []byte
 		peek, err = fr.br.Peek(1)
 		//If their is no next line or it starts a new Tree or Forest return
 		if err != nil || (intree && (peek[0] == 'T' || peek[0] == 'F')) {
