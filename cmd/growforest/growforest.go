@@ -10,5 +10,5 @@ func main() {
 	g := rfx.NewGrowForest()
 	g.Mount("")
 	flag.Parse()
-	g.Fit()
+	g.Run()
 }

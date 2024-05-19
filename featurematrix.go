@@ -307,6 +307,9 @@ func (fm *FeatureMatrix) LoadCases(data *csv.Reader, rowlabels bool) {
 		caselabel := fmt.Sprintf("%v", count)
 		if rowlabels {
 			caselabel = record[0]
+			if strings.HasPrefix(caselabel, "#") {
+				continue
+			}
 			record = record[1:]
 		}
 		fm.Cases = append(fm.Cases, caselabel)
@@ -316,7 +319,6 @@ func (fm *FeatureMatrix) LoadCases(data *csv.Reader, rowlabels bool) {
 			v := record[i]
 			d.Append(v)
 		}
-
 		count++
 	}
 }
@@ -326,57 +328,32 @@ func (fm *FeatureMatrix) LoadCases(data *csv.Reader, rowlabels bool) {
 // N: indicating numerical, C: indicating categorical or B: indicating boolean
 // For this parser features without N: are assumed to be categorical
 func ParseAFM(input io.Reader) *FeatureMatrix {
-	data := make([]Feature, 0, 100)
-	lookup := make(map[string]int, 0)
 	tsv := csv.NewReader(input)
 	tsv.Comma = '\t'
 	headers, err := tsv.Read()
 	if err == io.EOF {
-		return &FeatureMatrix{data, lookup, headers[1:]}
+		return &FeatureMatrix{[]Feature{}, map[string]int{}, headers[1:]}
 	} else if err != nil {
 		log.Print("Error:", err)
-		return &FeatureMatrix{data, lookup, headers[1:]}
+		return &FeatureMatrix{[]Feature{}, map[string]int{}, headers[1:]}
 	}
 	headers = headers[1:]
 
 	if len(headers[0]) > 1 {
 		sniff := headers[0][:2]
-		if sniff == "N:" || sniff == "C:" || sniff == "B:" || sniff == "T:" || sniff == "R:" {
-			//features in cols
-
-			for i, label := range headers {
-				if label[:2] == "N:" {
-					data = append(data, &DenseNumFeature{
-						NumData:    make([]float64, 0),
-						Missing:    make([]bool, 0),
-						Name:       label,
-						HasMissing: false,
-					})
-				} else if label[:2] == "C:" || label[:2] == "B:" || label[:2] == "T:" {
-					data = append(data, &DenseCatFeature{
-						CatMap: &CatMap{
-							Map:  make(map[string]int, 0),
-							Back: make([]string, 0),
-						},
-						CatData:      make([]int, 0),
-						Missing:      make([]bool, 0),
-						Name:         label,
-						RandomSearch: false,
-						HasMissing:   false,
-					})
-				} else {
-					continue
-				}
-				lookup[label] = i
-			}
-
-			fm := &FeatureMatrix{data, lookup, make([]string, 0)}
-			fm.LoadCases(tsv, true)
-			return fm
+		if sniff == "N:" || sniff == "C:" || sniff == "B:" || sniff == "T:" || sniff == "R:" || sniff == "E:" || sniff == "M:" {
+			return loadCols(tsv, headers)
 		}
 	}
 
-	//features in rows
+	return loadRows(tsv, headers)
+}
+
+// features in rows
+func loadRows(tsv *csv.Reader, headers []string) *FeatureMatrix {
+	data := make([]Feature, 0, 100)
+	lookup := make(map[string]int, 0)
+
 	count := 0
 	for {
 		record, err := tsv.Read()
@@ -395,6 +372,42 @@ func ParseAFM(input io.Reader) *FeatureMatrix {
 		count++
 	}
 	return &FeatureMatrix{data, lookup, headers}
+}
+
+// features in cols
+func loadCols(tsv *csv.Reader, headers []string) *FeatureMatrix {
+	data := make([]Feature, 0, 100)
+	lookup := make(map[string]int, 0)
+
+	for i, label := range headers {
+		if label[:2] == "N:" || label[:2] == "M:" {
+			data = append(data, &DenseNumFeature{
+				NumData:    make([]float64, 0),
+				Missing:    make([]bool, 0),
+				Name:       label,
+				HasMissing: false,
+			})
+		} else if label[:2] == "C:" || label[:2] == "B:" || label[:2] == "T:" || label[:2] == "R:" || label[:2] == "E:" {
+			data = append(data, &DenseCatFeature{
+				CatMap: &CatMap{
+					Map:  make(map[string]int, 0),
+					Back: make([]string, 0),
+				},
+				CatData:      make([]int, 0),
+				Missing:      make([]bool, 0),
+				Name:         label,
+				RandomSearch: false,
+				HasMissing:   false,
+			})
+		} else {
+			panic("Unknown feature type: " + label[:2])
+		}
+		lookup[label] = i
+	}
+
+	fm := &FeatureMatrix{data, lookup, make([]string, 0)}
+	fm.LoadCases(tsv, true)
+	return fm
 }
 
 // LoadAFM loads a, possible zipped, FeatureMatrix specified by filename

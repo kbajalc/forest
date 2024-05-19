@@ -13,6 +13,7 @@ import (
 	"regexp"
 	"runtime"
 	"runtime/pprof"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -451,7 +452,7 @@ func (gf *GrowForest) Mount(px string) {
 	flag.StringVar(&gf.ScikitForest, px+"scikitforest", gf.ScikitForest, "Write out a (partially complete) scikit style forest in json.")
 }
 
-func (g *GrowForest) Fit() {
+func (g *GrowForest) Run() {
 	nForest := 1
 
 	fmt.Println("--------------------------------------------------------------------")
@@ -479,6 +480,7 @@ func (g *GrowForest) Fit() {
 
 	fmt.Printf("! Cores: %v\n", g.Cores)
 	fmt.Printf("! Trees: %v\n", g.Trees)
+	fmt.Printf("! Max Depth: %v\n", g.MaxDepth)
 
 	if g.CpuProfile != "" {
 		fmt.Printf("> CPU Profile: %v\n", g.CpuProfile)
@@ -546,6 +548,12 @@ func (g *GrowForest) Fit() {
 	// Blacklist all T that are not target
 	for i, feature := range data.Data {
 		if targeti != i && strings.HasPrefix(feature.GetName(), "T:") {
+			if !blacklistis[i] {
+				blacklisted += 1
+				blacklistis[i] = true
+			}
+		}
+		if strings.HasPrefix(feature.GetName(), "R:") || strings.HasPrefix(feature.GetName(), "E:") || strings.HasPrefix(feature.GetName(), "M:") {
 			if !blacklistis[i] {
 				blacklisted += 1
 				blacklistis[i] = true
@@ -1213,44 +1221,67 @@ func (g *GrowForest) Fit() {
 			tree.Vote(testdata, tally)
 		}
 
-		fmt.Printf("= Error: %v\n", tally.TallyError(testtarget))
+		if g.OOB {
+			fmt.Printf("= Out of Bag Error : %v\n", oobVotes.TallyError(unboostedTarget))
+		}
+
+		fmt.Printf("= Test Error: %v\n", tally.TallyError(testtarget))
 
 		if testtarget.NCats() != 0 {
-			reftotals := make([]int, testtarget.NCats()*2)
-			predtotals := make([]int, testtarget.NCats()*2)
+			reftotals := map[string]int{}
+			predtotals := map[string]int{}
 
-			true_pos := make([]int, testtarget.NCats()*2)
-			false_pos := make([]int, testtarget.NCats()*2)
-			false_neg := make([]int, testtarget.NCats()*2)
+			true_pos := map[string]int{}
+			false_pos := map[string]int{}
+			false_neg := map[string]int{}
+
+			conf := map[string]map[string]int{}
 
 			correct := 0
 			errors := 0
 			nas := 0
 			length := testtarget.Length()
 			for i := 0; i < length; i++ {
-				refi := testtarget.(*DenseCatFeature).Geti(i)
-				reftotals[refi]++
+				// refi := testtarget.(*DenseCatFeature).Geti(i)
 				pred := tally.Tally(i)
 				orig := testtarget.GetStr(i)
+
+				reftotals[orig]++
+
+				if _, ok := conf[orig]; !ok {
+					conf[orig] = map[string]int{}
+				}
+				if _, ok := conf[pred]; !ok {
+					conf[pred] = map[string]int{}
+				}
+
+				if _, ok := conf[pred][orig]; !ok {
+					conf[pred][orig] = 0
+				}
+
+				conf[pred][orig]++
 
 				if pred == "NA" {
 					nas++
 					continue
 				}
 
-				predi := testtarget.(*DenseCatFeature).CatToNum(pred)
-				predtotals[predi]++
+				// predi := testtarget.(*DenseCatFeature).CatToNum(pred)
+				predtotals[pred]++
 				if pred == orig {
 					correct++
-					true_pos[refi]++
+					true_pos[orig]++
 				} else {
 					errors++
-					false_pos[predi]++
-					false_neg[refi]++
+					false_pos[pred]++
+					false_neg[orig]++
 				}
 			}
 
 			fmt.Printf("= Classified: %v / %v = %.3f\n", correct, length, float64(correct)*100/float64(length))
+			if nas != 0 {
+				fmt.Printf("= Couldn't predict %v cases due to missing values.\n", nas)
+			}
 
 			// fmt.Println()
 			// for i, v := range testtarget.(*DenseCatFeature).Back {
@@ -1258,11 +1289,14 @@ func (g *GrowForest) Fit() {
 			// 	falses := reftotals[i] - true_pos[i]
 			// 	fmt.Printf("- Label [%v] Missed/Actuall Rate: %v / %v = %.3f\n", v, falses, reftotals[i], float64(falses)*100/float64(reftotals[i]))
 			// }
-			if nas != 0 {
-				fmt.Printf("= Couldn't predict %v cases due to missing values.\n", nas)
-			}
 
 			fmt.Println()
+
+			cts := []string{}
+			for _, k := range testtarget.(*DenseCatFeature).Back {
+				cts = append(cts, k)
+			}
+			slices.Sort(cts)
 
 			err_pos := 0
 			err_neg := 0
@@ -1270,7 +1304,7 @@ func (g *GrowForest) Fit() {
 			fmt.Println("--------------------------------------------------------------------")
 			fmt.Println("CAT           TP      FP      FN      ER        SE       PP       F1")
 			fmt.Println("--------------------------------------------------------------------")
-			for i, v := range testtarget.(*DenseCatFeature).Back {
+			for _, i := range cts {
 				se := float64(true_pos[i]) / float64(true_pos[i]+false_pos[i])
 				pp := float64(true_pos[i]) / float64(true_pos[i]+false_neg[i])
 				f1 := 2 * se * pp / (se + pp)
@@ -1278,7 +1312,7 @@ func (g *GrowForest) Fit() {
 				err_neg += false_neg[i]
 
 				fmt.Printf("%-8v  %6d  %6d  %6d  %6d   %7.3f  %7.3f  %7.3f\n",
-					v, true_pos[i], false_pos[i], false_neg[i], false_pos[i]+false_neg[i], se*100, pp*100, f1*100)
+					i, true_pos[i], false_pos[i], false_neg[i], false_pos[i]+false_neg[i], se*100, pp*100, f1*100)
 			}
 			fmt.Println("--------------------------------------------------------------------")
 			se := float64(correct) / float64(correct+err_pos)
@@ -1287,6 +1321,29 @@ func (g *GrowForest) Fit() {
 			fmt.Printf("%-8v  %6d  %6d  %6d  %6d   %7.3f  %7.3f  %7.3f\n",
 				"ALL", correct, err_pos, err_neg, errors, se*100, pp*100, f1*100)
 			fmt.Println("--------------------------------------------------------------------")
+
+			fmt.Println()
+
+			fmt.Printf("%6s", "")
+			for _, o := range cts {
+				fmt.Printf("%8s", o)
+			}
+			fmt.Printf("%10s", "count")
+			fmt.Printf("%10s\n", "c.err.")
+			for _, p := range cts {
+				fmt.Printf("%6s", p)
+				s := 0
+				e := 0
+				for _, o := range cts {
+					v := conf[p][o]
+					s += v
+					if p != o {
+						e += v
+					}
+					fmt.Printf("%8d", v)
+				}
+				fmt.Printf("%10d%10.6f\n", s, float64(e)/float64(s))
+			}
 		}
 	}
 }
