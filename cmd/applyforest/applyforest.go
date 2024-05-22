@@ -8,7 +8,7 @@ import (
 
 func main() {
 	af := rfx.NewApplyForest()
-	af.Mount()
+	af.Mount("")
 	flag.Parse()
 	af.Run()
 }
