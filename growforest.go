@@ -11,7 +11,6 @@ import (
 	"math/rand"
 	"os"
 	"regexp"
-	"runtime"
 	"runtime/pprof"
 	"slices"
 	"strings"
@@ -227,27 +226,6 @@ func NewGrowForest() *GrowForest {
 		NP_k:       100,
 	}
 	return &g
-}
-
-func (g *GrowForest) Apply(train string, target string, test string) *GrowForest {
-	g.TrainFile = train
-	g.TargetName = target
-	g.TestFile = test
-
-	if g.TestFile != "" {
-		g.SelfTest = true
-	}
-
-	pref := strings.TrimSuffix(train, ".tsv")
-	pref = strings.TrimSuffix(pref, ".fm")
-
-	g.Cores = runtime.NumCPU()
-	g.OOB = true
-	g.ForestFile = pref + ".model.sf"
-	g.Importance = pref + ".imp.tsv"
-	g.CaseOOB = pref + ".oob.tsv"
-
-	return g
 }
 
 func (gf *GrowForest) Clone() *GrowForest {
@@ -1188,7 +1166,7 @@ func (g *GrowForest) Run() {
 		fmt.Println()
 
 		testdata := data
-		testtarget := unboostedTarget
+		tester := unboostedTarget
 		if g.TestFile != "" {
 			var err error
 			testdata, err = LoadAFM(g.TestFile)
@@ -1199,7 +1177,7 @@ func (g *GrowForest) Run() {
 			if !ok {
 				log.Fatal("Target not found in test data.")
 			}
-			testtarget = testdata.Data[targeti]
+			tester = testdata.Data[targeti]
 
 			for _, tree := range trees {
 				tree.StripCodes()
@@ -1225,9 +1203,9 @@ func (g *GrowForest) Run() {
 			fmt.Printf("= Out of Bag Error : %v\n", oobVotes.TallyError(unboostedTarget))
 		}
 
-		fmt.Printf("= Test Error: %v\n", tally.TallyError(testtarget))
+		fmt.Printf("= Test Error: %v\n", tally.TallyError(tester))
 
-		if testtarget.NCats() != 0 {
+		if tester.NCats() != 0 {
 			reftotals := map[string]int{}
 			predtotals := map[string]int{}
 
@@ -1240,11 +1218,11 @@ func (g *GrowForest) Run() {
 			correct := 0
 			errors := 0
 			nas := 0
-			length := testtarget.Length()
+			length := tester.Length()
 			for i := 0; i < length; i++ {
 				// refi := testtarget.(*DenseCatFeature).Geti(i)
 				pred := tally.Tally(i)
-				orig := testtarget.GetStr(i)
+				orig := tester.GetStr(i)
 
 				reftotals[orig]++
 
@@ -1293,7 +1271,7 @@ func (g *GrowForest) Run() {
 			fmt.Println()
 
 			cts := []string{}
-			for _, k := range testtarget.(*DenseCatFeature).Back {
+			for _, k := range tester.(*DenseCatFeature).Back {
 				cts = append(cts, k)
 			}
 			slices.Sort(cts)
@@ -1344,6 +1322,8 @@ func (g *GrowForest) Run() {
 				}
 				fmt.Printf("%10d%10.6f\n", s, float64(e)/float64(s))
 			}
+
+			fmt.Println()
 		}
 	}
 }
