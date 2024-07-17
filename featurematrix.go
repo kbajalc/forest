@@ -341,7 +341,7 @@ func ParseAFM(input io.Reader) *FeatureMatrix {
 
 	if len(headers[0]) > 1 {
 		sniff := headers[0][:2]
-		if sniff == "N:" || sniff == "C:" || sniff == "B:" || sniff == "T:" || sniff == "R:" || sniff == "E:" || sniff == "M:" {
+		if sniff == "N:" || sniff == "C:" || sniff == "B:" || sniff == "T:" || sniff == "R:" || sniff == "E:" || sniff == "M:" || sniff == "H:" {
 			return loadCols(tsv, headers)
 		}
 	}
@@ -380,7 +380,7 @@ func loadCols(tsv *csv.Reader, headers []string) *FeatureMatrix {
 	lookup := make(map[string]int, 0)
 
 	for i, label := range headers {
-		if label[:2] == "N:" || label[:2] == "M:" {
+		if label[:2] == "N:" || label[:2] == "M:" || label[:2] == "H:" {
 			data = append(data, &DenseNumFeature{
 				NumData:    make([]float64, 0),
 				Missing:    make([]bool, 0),

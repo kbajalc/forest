@@ -531,7 +531,7 @@ func (g *GrowForest) Run() {
 				blacklistis[i] = true
 			}
 		}
-		if strings.HasPrefix(feature.GetName(), "R:") || strings.HasPrefix(feature.GetName(), "E:") || strings.HasPrefix(feature.GetName(), "M:") {
+		if !strings.HasPrefix(feature.GetName(), "T:") && !strings.HasPrefix(feature.GetName(), "N:") && !strings.HasPrefix(feature.GetName(), "C:") && !strings.HasPrefix(feature.GetName(), "B:") {
 			if !blacklistis[i] {
 				blacklisted += 1
 				blacklistis[i] = true
